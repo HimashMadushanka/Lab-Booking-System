@@ -155,7 +155,7 @@ table th, table td {
   <!-- Navigation Links -->
   <div class="nav-links">
     <a href="create.php">Book a Lab</a>
-    <a href="bookings/mybookings.php">My Bookings</a>
+    <a href="mybookings.php">My Bookings</a>
     <a href="logout.php" class="logout">Logout</a>
   </div>
 

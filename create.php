@@ -21,18 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
         $error = "⚠️ All fields are required.";
     } else {
         // Find an available computer automatically
-        $find = $conn->prepare("
-            SELECT id, code FROM computers 
-            WHERE lab_id=? AND status='available' 
-            AND id NOT IN (
-                SELECT computer_id FROM bookings 
-                WHERE date=? 
-                AND status IN ('pending','approved')
-                AND NOT (end_time <= ? OR start_time >= ?)
-            )
-            LIMIT 1
-        ");
-        $find->bind_param('isss', $lab_id, $date, $start_time, $end_time);
+       
+$find = $conn->prepare("
+    SELECT id, code FROM computers
+    WHERE lab_id=? AND status='available'
+    AND id NOT IN (
+        SELECT computer_id FROM bookings
+        WHERE date=?
+        AND status IN ('pending','approved')
+        AND (
+            ? < end_time AND ? > start_time
+        )
+    )
+    LIMIT 1
+");
+$find->bind_param('isss', $lab_id, $date, $start_time, $end_time);
+
         $find->execute();
         $result = $find->get_result();
 
