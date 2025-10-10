@@ -131,7 +131,7 @@ $find->bind_param('isss', $lab_id, $date, $start_time, $end_time);
     ?>
   </select>
 
-  <label>Date:</label>
+  <label>Date: </label>
   <input type="date" name="date" required>
 
   <label>Start Time:</label>
