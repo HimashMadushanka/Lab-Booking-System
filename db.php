@@ -1,6 +1,10 @@
 <?php
 // db.php
-session_start();
+
+// Start session only if it hasn't been started already
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 $host = 'localhost';
 $db   = 'lab_mgmt';
