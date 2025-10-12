@@ -9,26 +9,83 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$message = "";
 
-// Fetch all bookings for this user
-$sql = "
-SELECT b.id, c.code AS computer_code, l.name AS lab_name, b.date, b.start_time, b.end_time, b.status
-FROM bookings b
-JOIN computers c ON b.computer_id = c.id
-JOIN labs l ON c.lab_id = l.id
-WHERE b.user_id = ?
-ORDER BY b.date DESC, b.start_time DESC
-";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $lab_id = $_POST['lab_id'];
+    $date = $_POST['date'];
+    $start_time = $_POST['start_time'];
+    $end_time = $_POST['end_time'];
+
+    // ✅ Step 1: Get total computers in this lab
+    $lab_query = $conn->query("SELECT COUNT(*) AS total FROM computers WHERE lab_id = '$lab_id'");
+    $lab_data = $lab_query->fetch_assoc();
+    $total_computers = $lab_data['total'];
+
+    if ($total_computers == 0) {
+        $message = "❌ This lab has no computers added yet!";
+    } else {
+        // ✅ Step 2: Check how many computers are already booked for that time
+        $check_query = $conn->query("
+            SELECT COUNT(*) AS booked 
+            FROM bookings b
+            JOIN computers c ON b.computer_id = c.id
+            WHERE c.lab_id = '$lab_id'
+            AND b.date = '$date'
+            AND (
+                ('$start_time' BETWEEN b.start_time AND b.end_time)
+                OR ('$end_time' BETWEEN b.start_time AND b.end_time)
+                OR (b.start_time BETWEEN '$start_time' AND '$end_time')
+            )
+        ");
+
+        $check = $check_query->fetch_assoc();
+        $booked = $check['booked'];
+
+        // ✅ Step 3: If available, assign a free computer
+        if ($booked < $total_computers) {
+            $free_computer_query = $conn->query("
+                SELECT id FROM computers WHERE lab_id = '$lab_id'
+                AND id NOT IN (
+                    SELECT computer_id FROM bookings 
+                    WHERE date = '$date'
+                    AND (
+                        ('$start_time' BETWEEN start_time AND end_time)
+                        OR ('$end_time' BETWEEN start_time AND end_time)
+                        OR (start_time BETWEEN '$start_time' AND '$end_time')
+                    )
+                )
+                LIMIT 1
+            ");
+            $free_computer = $free_computer_query->fetch_assoc();
+            $computer_id = $free_computer['id'];
+
+            // ✅ Step 4: Insert booking
+            $insert = $conn->query("
+                INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
+                VALUES ('$user_id', '$computer_id', '$date', '$start_time', '$end_time', 'Booked')
+            ");
+
+            if ($insert) {
+                $message = "✅ Booking successful!";
+            } else {
+                $message = "❌ Database Error: " . $conn->error;
+            }
+        } else {
+            $message = "❌ No available computers in this lab for the selected time.";
+        }
+    }
+}
+
+// ✅ Fetch available labs for dropdown
+$labs = $conn->query("SELECT * FROM labs");
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Bookings | Lab Management</title>
+<title>Book a Lab | Lab Management</title>
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -45,27 +102,37 @@ body {
 .container {
   width: 80%;
   margin: 30px auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
   background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
-th, td {
-  border: 1px solid #ccc;
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+input, select, button {
   padding: 10px;
-  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
-th {
+button {
   background: #2980b9;
   color: white;
+  cursor: pointer;
 }
-tr:nth-child(even) {
-  background: #f9f9f9;
+button:hover {
+  background: #1f6391;
+}
+.message {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 .nav {
-  margin-top: 20px;
   text-align: center;
+  margin-top: 20px;
 }
 .nav a {
   background: #2980b9;
@@ -82,41 +149,41 @@ tr:nth-child(even) {
 <body>
 
 <div class="header">
-  <h1>My Bookings</h1>
-  <p>View all your past and upcoming lab bookings</p>
+  <h1>Book a Lab</h1>
+  <p>Select a lab and time to book your computer</p>
 </div>
 
 <div class="container">
-<table>
-  <tr>
-    <th>#</th>
-    <th>Lab</th>
-    <th>Computer</th>
-    <th>Date</th>
-    <th>Start Time</th>
-    <th>End Time</th>
-    <th>Status</th>
-  </tr>
-  <?php if ($result->num_rows > 0): ?>
-    <?php $i = 1; while($row = $result->fetch_assoc()): ?>
-      <tr>
-        <td><?= $i++ ?></td>
-        <td><?= htmlspecialchars($row['lab_name']) ?></td>
-        <td><?= htmlspecialchars($row['computer_code']) ?></td>
-        <td><?= htmlspecialchars($row['date']) ?></td>
-        <td><?= htmlspecialchars($row['start_time']) ?></td>
-        <td><?= htmlspecialchars($row['end_time']) ?></td>
-        <td><?= htmlspecialchars($row['status']) ?></td>
-      </tr>
-    <?php endwhile; ?>
-  <?php else: ?>
-    <tr><td colspan="7">No bookings found.</td></tr>
+  <?php if ($message): ?>
+    <div class="message"><?= $message ?></div>
   <?php endif; ?>
-</table>
 
-<div class="nav">
-  <a href="index.php">⬅ Back to Dashboard</a>
+  <form method="POST">
+    <label for="lab_id">Select Lab:</label>
+    <select name="lab_id" id="lab_id" required>
+      <option value="">-- Choose Lab --</option>
+      <?php while ($lab = $labs->fetch_assoc()): ?>
+        <option value="<?= $lab['id'] ?>"><?= htmlspecialchars($lab['name']) ?></option>
+      <?php endwhile; ?>
+    </select>
+
+    <label for="date">Select Date:</label>
+    <input type="date" name="date" id="date" required>
+
+    <label for="start_time">Start Time:</label>
+    <input type="time" name="start_time" id="start_time" required>
+
+    <label for="end_time">End Time:</label>
+    <input type="time" name="end_time" id="end_time" required>
+
+    <button type="submit">Book Lab</button>
+  </form>
+
+  <div class="nav">
+    <a href="dashboard.php">⬅ Back to Dashboard</a> |
+    <a href="my_bookings.php">📋 View My Bookings</a>
+  </div>
 </div>
-</div>
+
 </body>
 </html>
