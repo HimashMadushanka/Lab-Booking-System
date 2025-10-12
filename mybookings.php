@@ -180,7 +180,7 @@ button:hover {
   </form>
 
   <div class="nav">
-    <a href="dashboard.php">⬅ Back to Dashboard</a> |
+    <a href="index.php">⬅ Back to Dashboard</a> |
     <a href="my_bookings.php">📋 View My Bookings</a>
   </div>
 </div>

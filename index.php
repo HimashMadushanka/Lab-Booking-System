@@ -113,10 +113,7 @@ table th, table td {
 
   <!-- Dashboard Summary Cards -->
   <div class="cards">
-    <div class="card">
-      <h2><?= $total_computers ?></h2>
-      <p>Available Time</p>
-    </div>
+   
     <div class="card">
       <h2><?= $total_bookings ?></h2>
       <p>Total Bookings</p>
