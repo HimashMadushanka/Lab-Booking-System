@@ -36,122 +36,458 @@ $result = $stmt->get_result();
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Bookings | Lab Management System</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f6f9;
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
-.header {
-  background-color: #2c3e50;
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1e293b;
+  padding: 30px 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 0 25px 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 30px;
+}
+
+.sidebar-logo h2 {
   color: white;
-  padding: 20px;
-  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
 }
-.container {
-  width: 90%;
-  max-width: 1000px;
-  margin: 30px auto;
+
+.sidebar-logo p {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.sidebar-menu {
+  list-style: none;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  padding: 14px 25px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.sidebar-menu a:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+  padding-left: 30px;
+}
+
+.sidebar-menu a.active {
+  background: #3b82f6;
+  color: white;
+  border-left: 4px solid #60a5fa;
+}
+
+.sidebar-menu a span {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.logout-btn {
+  position: absolute;
+  bottom: 30px;
+  left: 25px;
+  right: 25px;
+}
+
+.logout-btn a {
+  display: block;
+  padding: 12px 20px;
+  background: #dc2626;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.logout-btn a:hover {
+  background: #b91c1c;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 30px 40px;
+}
+
+.page-header {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.page-header p {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Stats Summary */
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-box {
   background: white;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-h2 {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   text-align: center;
-  color: #2c3e50;
+  border-left: 4px solid #3b82f6;
 }
+
+.stat-box.approved {
+  border-left-color: #10b981;
+}
+
+.stat-box.pending {
+  border-left-color: #f59e0b;
+}
+
+.stat-box.rejected {
+  border-left-color: #ef4444;
+}
+
+.stat-box h3 {
+  font-size: 32px;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.stat-box p {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Bookings Table */
+.bookings-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 25px 30px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 }
-th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+
+table thead {
+  background: #f8fafc;
+}
+
+table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+table td {
+  padding: 18px 20px;
+  color: #334155;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+table tbody tr {
+  transition: background 0.2s ease;
+}
+
+table tbody tr:hover {
+  background: #f8fafc;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.row-number {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.lab-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.computer-code {
+  font-family: 'Courier New', monospace;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 60px 30px;
   text-align: center;
 }
-th {
-  background-color: #3498db;
+
+.empty-state-icon {
+  font-size: 64px;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.empty-state a {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #3b82f6;
   color: white;
-}
-tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-tr:hover {
-  background-color: #f1f1f1;
-}
-.status {
-  font-weight: bold;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-.status.pending { color: #f39c12; }
-.status.approved { color: #27ae60; }
-.status.rejected { color: #e74c3c; }
-.nav {
-  text-align: center;
-  margin-top: 30px;
-}
-.nav a {
   text-decoration: none;
-  background-color: #3498db;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.3s ease;
 }
-.nav a:hover {
-  background-color: #217dbb;
+
+.empty-state a:hover {
+  background: #2563eb;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
+  }
+  
+  .stats-summary {
+    grid-template-columns: 1fr;
+  }
+  
+  table th, table td {
+    padding: 12px 15px;
+    font-size: 13px;
+  }
+  
+  .computer-code {
+    font-size: 12px;
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>My Bookings</h1>
-  <p>View all your lab bookings here</p>
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>🖥️ Lab Manager</h2>
+    <p>Computer Lab System</p>
+  </div>
+  
+  <ul class="sidebar-menu">
+    <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
+    <li><a href="mybookings.php" class="active"><span>📋</span> My Bookings</a></li>
+  </ul>
+  
+  <div class="logout-btn">
+    <a href="logout.php">Logout</a>
+  </div>
 </div>
 
-<div class="container">
-  <h2>Booking History</h2>
-  <table>
-    <tr>
-      <th>#</th>
-      <th>Lab</th>
-      <th>Computer</th>
-      <th>Date</th>
-      <th>Start Time</th>
-      <th>End Time</th>
-      <th>Status</th>
-    </tr>
-    <?php if ($result->num_rows > 0): ?>
-      <?php $i = 1; while($row = $result->fetch_assoc()): ?>
-        <tr>
-          <td><?= $i++ ?></td>
-          <td><?= htmlspecialchars($row['lab_name']) ?></td>
-          <td><?= htmlspecialchars($row['computer_code']) ?></td>
-          <td><?= htmlspecialchars($row['date']) ?></td>
-          <td><?= htmlspecialchars($row['start_time']) ?></td>
-          <td><?= htmlspecialchars($row['end_time']) ?></td>
-          <td>
-            <span class="status <?= strtolower($row['status']) ?>">
-              <?= ucfirst($row['status']) ?>
-            </span>
-          </td>
-        </tr>
-      <?php endwhile; ?>
-    <?php else: ?>
-      <tr>
-        <td colspan="7">No bookings found.</td>
-      </tr>
-    <?php endif; ?>
-  </table>
-
-  <div class="nav">
-    <a href="index.php">⬅ Back to Dashboard</a>
+<!-- Main Content -->
+<div class="main-content">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>📋 My Bookings</h1>
+    <p>View and manage all your lab bookings</p>
   </div>
+
+  <!-- Stats Summary -->
+  <?php
+  $total = $result->num_rows;
+  $approved = 0;
+  $pending = 0;
+  $rejected = 0;
+  
+  mysqli_data_seek($result, 0);
+  while($row = $result->fetch_assoc()) {
+    if($row['status'] == 'approved') $approved++;
+    elseif($row['status'] == 'pending') $pending++;
+    elseif($row['status'] == 'rejected') $rejected++;
+  }
+  mysqli_data_seek($result, 0);
+  ?>
+  
+  <div class="stats-summary">
+    <div class="stat-box">
+      <h3><?= $total ?></h3>
+      <p>Total Bookings</p>
+    </div>
+    <div class="stat-box approved">
+      <h3><?= $approved ?></h3>
+      <p>Approved</p>
+    </div>
+    <div class="stat-box pending">
+      <h3><?= $pending ?></h3>
+      <p>Pending</p>
+    </div>
+    <div class="stat-box rejected">
+      <h3><?= $rejected ?></h3>
+      <p>Rejected</p>
+    </div>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="bookings-section">
+    <div class="section-header">
+      <h2>Booking History</h2>
+    </div>
+    
+    <div class="table-wrapper">
+      <?php if ($result->num_rows > 0): ?>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Lab</th>
+              <th>Computer</th>
+              <th>Date</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php $i = 1; while($row = $result->fetch_assoc()): ?>
+              <tr>
+                <td class="row-number"><?= $i++ ?></td>
+                <td class="lab-name"><?= htmlspecialchars($row['lab_name']) ?></td>
+                <td><span class="computer-code"><?= htmlspecialchars($row['computer_code']) ?></span></td>
+                <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
+                <td><?= date('g:i A', strtotime($row['start_time'])) ?></td>
+                <td><?= date('g:i A', strtotime($row['end_time'])) ?></td>
+                <td>
+                  <span class="status-badge <?= strtolower($row['status']) ?>">
+                    <?= ucfirst($row['status']) ?>
+                  </span>
+                </td>
+              </tr>
+            <?php endwhile; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <p>You don't have any bookings yet</p>
+          <a href="create.php">Make Your First Booking</a>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+
 </div>
 
 </body>

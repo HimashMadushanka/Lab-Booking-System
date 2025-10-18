@@ -1,10 +1,11 @@
 <?php
 // login.php
 require 'db.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-
+    
     $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email=? LIMIT 1");
     $stmt->bind_param('s', $email);
     $stmt->execute();
@@ -37,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #172c45ff 0%,  #401c62ff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -59,17 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #333;
             margin-bottom: 30px;
             font-size: 28px;
-        }
-        
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid #c3e6cb;
-            font-size: 14px;
         }
         
         form {
@@ -147,15 +137,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .register-link a:hover {
             text-decoration: underline;
         }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2>Welcome Back</h2>
+        <h2>Login</h2>
         <?php if (isset($_GET['registered'])): ?>
-            <div class="success-message">
-                Registration successful! Please login with your credentials.
-            </div>
+            <div class="success-message">Registration successful! Please login.</div>
         <?php endif; ?>
         <form method="post">
             <input name="email" type="email" required placeholder="Email">

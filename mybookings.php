@@ -9,6 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$user_name = $_SESSION['user_name'] ?? 'User';
 $message = "";
 
 // Handle form submission
@@ -64,16 +65,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // ✅ Step 4: Insert booking
             $insert = $conn->query("
                 INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
-                VALUES ('$user_id', '$computer_id', '$date', '$start_time', '$end_time', 'Booked')
+                VALUES ('$user_id', '$computer_id', '$date', '$start_time', '$end_time', 'pending')
             ");
 
             if ($insert) {
                 $message = "✅ Booking successful!";
+                $message_type = "success";
             } else {
                 $message = "❌ Database Error: " . $conn->error;
+                $message_type = "error";
             }
         } else {
             $message = "❌ No available computers in this lab for the selected time.";
+            $message_type = "error";
         }
     }
 }
@@ -85,103 +89,374 @@ $labs = $conn->query("SELECT * FROM labs");
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a Lab | Lab Management</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f9;
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
-.header {
-  background: #34495e;
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1e293b;
+  padding: 30px 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 0 25px 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 30px;
+}
+
+.sidebar-logo h2 {
   color: white;
-  padding: 15px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sidebar-logo p {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.sidebar-menu {
+  list-style: none;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  padding: 14px 25px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.sidebar-menu a:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+  padding-left: 30px;
+}
+
+.sidebar-menu a.active {
+  background: #3b82f6;
+  color: white;
+  border-left: 4px solid #60a5fa;
+}
+
+.sidebar-menu a span {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.logout-btn {
+  position: absolute;
+  bottom: 30px;
+  left: 25px;
+  right: 25px;
+}
+
+.logout-btn a {
+  display: block;
+  padding: 12px 20px;
+  background: #dc2626;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.logout-btn a:hover {
+  background: #b91c1c;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 40px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-container {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 600px;
+}
+
+.page-header {
+  margin-bottom: 30px;
   text-align: center;
 }
-.container {
-  width: 80%;
-  margin: 30px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+.page-header h2 {
+  font-size: 28px;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
+
+.page-header p {
+  color: #64748b;
+  font-size: 15px;
+}
+
+.alert {
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
 form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
-input, select, button {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-button {
-  background: #2980b9;
-  color: white;
+
+label {
+  font-weight: 600;
+  color: #334155;
+  font-size: 14px;
+}
+
+select, input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #1e293b;
+  transition: all 0.3s ease;
+  outline: none;
+  background: white;
+}
+
+select:focus, input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+select {
   cursor: pointer;
 }
-button:hover {
-  background: #1f6391;
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
 }
-.message {
-  text-align: center;
-  margin-bottom: 15px;
-  font-weight: bold;
+
+.time-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
-.nav {
-  text-align: center;
-  margin-top: 20px;
-}
-.nav a {
-  background: #2980b9;
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: #3b82f6;
   color: white;
-  padding: 10px 20px;
-  text-decoration: none;
-  border-radius: 5px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
-.nav a:hover {
-  background: #1f6391;
+
+button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.nav-links a:hover {
+  color: #3b82f6;
+  background: #f1f5f9;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
+  }
+
+  .booking-container {
+    padding: 30px 25px;
+  }
+
+  .page-header h2 {
+    font-size: 24px;
+  }
+
+  .time-group {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-links a {
+    text-align: center;
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Book a Lab</h1>
-  <p>Select a lab and time to book your computer</p>
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h2>🖥️ Lab Manager</h2>
+    <p>Computer Lab System</p>
+  </div>
+  
+  <ul class="sidebar-menu">
+    <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="book_lab.php" class="active"><span>➕</span> Book a Lab</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+  </ul>
+  
+  <div class="logout-btn">
+    <a href="../logout.php">Logout</a>
+  </div>
 </div>
 
-<div class="container">
-  <?php if ($message): ?>
-    <div class="message"><?= $message ?></div>
-  <?php endif; ?>
+<!-- Main Content -->
+<div class="main-content">
+  <div class="booking-container">
+    
+    <div class="page-header">
+      <h2>📅 Book a Lab</h2>
+      <p>Select your preferred lab and time slot</p>
+    </div>
 
-  <form method="POST">
-    <label for="lab_id">Select Lab:</label>
-    <select name="lab_id" id="lab_id" required>
-      <option value="">-- Choose Lab --</option>
-      <?php while ($lab = $labs->fetch_assoc()): ?>
-        <option value="<?= $lab['id'] ?>"><?= htmlspecialchars($lab['name']) ?></option>
-      <?php endwhile; ?>
-    </select>
+    <?php if (!empty($message)): ?>
+      <div class="alert alert-<?= isset($message_type) ? $message_type : 'error' ?>">
+        <?= $message ?>
+      </div>
+    <?php endif; ?>
 
-    <label for="date">Select Date:</label>
-    <input type="date" name="date" id="date" required>
+    <form method="POST">
+      <div class="form-group">
+        <label for="lab_id">🏢 Select Lab</label>
+        <select name="lab_id" id="lab_id" required>
+          <option value="">-- Choose Lab --</option>
+          <?php while ($lab = $labs->fetch_assoc()): ?>
+            <option value="<?= $lab['id'] ?>"><?= htmlspecialchars($lab['name']) ?></option>
+          <?php endwhile; ?>
+        </select>
+      </div>
 
-    <label for="start_time">Start Time:</label>
-    <input type="time" name="start_time" id="start_time" required>
+      <div class="form-group">
+        <label for="date">📆 Select Date</label>
+        <input type="date" name="date" id="date" required min="<?= date('Y-m-d') ?>">
+      </div>
 
-    <label for="end_time">End Time:</label>
-    <input type="time" name="end_time" id="end_time" required>
+      <div class="time-group">
+        <div class="form-group">
+          <label for="start_time">🕐 Start Time</label>
+          <input type="time" name="start_time" id="start_time" required>
+        </div>
 
-    <button type="submit">Book Lab</button>
-  </form>
+        <div class="form-group">
+          <label for="end_time">🕐 End Time</label>
+          <input type="time" name="end_time" id="end_time" required>
+        </div>
+      </div>
 
-  <div class="nav">
-    <a href="index.php">⬅ Back to Dashboard</a> |
-    <a href="my_bookings.php">📋 View My Bookings</a>
+      <button type="submit">🎯 Book Lab</button>
+    </form>
+
+    <div class="nav-links">
+      <a href="index.php">← Back to Dashboard</a>
+      <a href="my_bookings.php">📋 View My Bookings</a>
+    </div>
+
   </div>
 </div>
 
