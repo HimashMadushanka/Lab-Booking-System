@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .register-container {
             background: white;
             padding: 40px;
-            border-radius: 12px;
+            border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 420px;

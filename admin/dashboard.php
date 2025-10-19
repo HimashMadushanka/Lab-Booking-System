@@ -18,7 +18,24 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
   <title>Admin Dashboard</title>
   <style>
     body { font-family: Arial; background: #ecf0f1; margin: 0; }
-    .header { background: #2c3e50; color: white; padding: 15px; text-align: center; }
+    .header { background: #2c3e50; color: white; padding: 15px; text-align: center; position: relative; }
+    .header .logout-btn {
+      color: white;
+      text-decoration: none;
+      background: linear-gradient(135deg, #c31717ff 0%, #e84a4aff 100%);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .header .logout-btn:hover {
+      transform: translateY(-50%) translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
     .cards { display: flex; justify-content: space-around; margin: 30px; flex-wrap: wrap; }
     .card {
       background: white; padding: 20px; width: 22%; text-align: center;
@@ -35,7 +52,7 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 <body>
 <div class="header">
   <h1>Admin Dashboard</h1>
-  <a href="logout.php" style="color:white; float:right; margin-top:-30px;">Logout</a>
+  <a href="logout.php" class="logout-btn">Logout</a>
 </div>
 
 <div class="cards">
@@ -47,8 +64,7 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
-  <a href="manage_users.php">Manage Users</a>
-  <a href="manage_computers.php">Manage Computers</a>
+
 </div>
 
 </body>

@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .login-container {
             background: white;
             padding: 40px;
-            border-radius: 12px;
+            border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 420px;
@@ -164,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         <div class="register-link">
             Don't have an account? <a href="register.php">Register here</a>
+            Login for Admin-<a href="admin/login.php">Login here</a>
         </div>
     </div>
 </body>
