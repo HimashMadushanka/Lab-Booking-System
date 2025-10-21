@@ -87,22 +87,30 @@ while($row = $peak_hours->fetch_assoc()) {
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #8df3eeff 0%,  #85bde7ff 100%);
+            min-height: 100vh;
             padding: 20px;
         }
         
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #172c45ff 0%,  #401c62ff 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 20px;
             margin-bottom: 30px;
             text-align: center;
             position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
         .header h1 {
             margin-bottom: 10px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            opacity: 0.9;
         }
         
         .logout-btn {
@@ -110,30 +118,45 @@ while($row = $peak_hours->fetch_assoc()) {
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            background: #e74c3c;
+            background: #dc2626;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 25px;
             font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
         
         .logout-btn:hover {
-            background: #c0392b;
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         
         .charts-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 25px;
             margin-bottom: 30px;
         }
         
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        
         .chart-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
         }
         
         .chart-card h3 {
@@ -141,6 +164,7 @@ while($row = $peak_hours->fetch_assoc()) {
             color: #2c3e50;
             text-align: center;
             font-size: 18px;
+            font-weight: 700;
         }
         
         .chart-wrapper {
@@ -157,23 +181,36 @@ while($row = $peak_hours->fetch_assoc()) {
         }
         
         .stat-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             text-align: center;
-            border-left: 4px solid #3498db;
+            border-left: 5px solid #667eea;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
         }
         
         .stat-card h4 {
-            font-size: 28px;
-            color: #2c3e50;
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 5px;
+            font-weight: 800;
         }
         
         .stat-card p {
-            color: #7f8c8d;
+            color: #5a6c7d;
             font-size: 14px;
+            font-weight: 600;
         }
         
         .navigation {
@@ -183,18 +220,20 @@ while($row = $peak_hours->fetch_assoc()) {
         
         .nav-btn {
             display: inline-block;
-            background: #3498db;
+            background: #2980b9;
             color: white;
-            padding: 12px 25px;
+            padding: 14px 30px;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 25px;
             margin: 0 10px;
             font-weight: 600;
-            transition: background 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
         
         .nav-btn:hover {
-            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
         
         @media (max-width: 768px) {
@@ -204,6 +243,17 @@ while($row = $peak_hours->fetch_assoc()) {
             
             .chart-card {
                 padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .logout-btn {
+                position: static;
+                transform: none;
+                display: block;
+                margin-top: 15px;
             }
         }
     </style>
@@ -243,7 +293,7 @@ while($row = $peak_hours->fetch_assoc()) {
 
     <!-- Charts Grid -->
     <div class="charts-container">
-        <!-- Daily Bookings Chart -->
+        <!-- Row 1: Daily Bookings & Status Distribution -->
         <div class="chart-card">
             <h3>📈 Daily Bookings (Last 30 Days)</h3>
             <div class="chart-wrapper">
@@ -251,7 +301,6 @@ while($row = $peak_hours->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Status Distribution Chart -->
         <div class="chart-card">
             <h3>📊 Booking Status Distribution</h3>
             <div class="chart-wrapper">
@@ -259,15 +308,15 @@ while($row = $peak_hours->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Monthly Trends Chart -->
-        <div class="chart-card">
+        <!-- Row 2: Monthly Trends Full Width -->
+        <div class="chart-card full-width">
             <h3>📅 Monthly Booking Trends</h3>
             <div class="chart-wrapper">
                 <canvas id="monthlyChart"></canvas>
             </div>
         </div>
 
-        <!-- Lab Usage Chart -->
+        <!-- Row 3: Lab Usage & Peak Hours -->
         <div class="chart-card">
             <h3>🏢 Lab Usage Distribution</h3>
             <div class="chart-wrapper">
@@ -275,14 +324,12 @@ while($row = $peak_hours->fetch_assoc()) {
             </div>
         </div>
 
-        <!-- Peak Hours Chart -->
         <div class="chart-card">
             <h3>⏰ Peak Booking Hours</h3>
             <div class="chart-wrapper">
                 <canvas id="hoursChart"></canvas>
             </div>
         </div>
-
     </div>
 
     <div class="navigation">
@@ -298,8 +345,18 @@ while($row = $peak_hours->fetch_assoc()) {
         const labData = <?= json_encode($lab_data) ?>;
         const hourData = <?= json_encode($hour_data) ?>;
 
-        // Daily Bookings Line Chart
-        new Chart(document.getElementById('dailyChart'), {
+        // Chart.js default options for modern look
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#2c3e50';
+
+        // Daily Bookings Line Chart - Modern gradient style
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        const dailyGradient = dailyCtx.createLinearGradient(0, 0, 0, 300);
+        dailyGradient.addColorStop(0, 'rgba(52, 152, 219, 0.4)');
+        dailyGradient.addColorStop(1, 'rgba(52, 152, 219, 0.01)');
+
+        new Chart(dailyCtx, {
             type: 'line',
             data: {
                 labels: dailyData.map(d => new Date(d.booking_date).toLocaleDateString()),
@@ -307,9 +364,15 @@ while($row = $peak_hours->fetch_assoc()) {
                     label: 'Daily Bookings',
                     data: dailyData.map(d => d.count),
                     borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    backgroundColor: dailyGradient,
+                    borderWidth: 3,
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
@@ -317,13 +380,47 @@ while($row = $peak_hours->fetch_assoc()) {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: true
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            padding: 10
+                        }
                     }
                 }
             }
         });
 
-        // Status Distribution Doughnut Chart
+        // Status Distribution Doughnut Chart - Modern with shadows
         new Chart(document.getElementById('statusChart'), {
             type: 'doughnut',
             data: {
@@ -331,55 +428,174 @@ while($row = $peak_hours->fetch_assoc()) {
                 datasets: [{
                     data: statusData.map(s => s.count),
                     backgroundColor: [
-                        '#f39c12', // pending - orange
-                        '#27ae60', // approved - green
-                        '#e74c3c'  // rejected - red
-                    ]
+                        '#f39c12',
+                        '#27ae60',
+                        '#e74c3c'
+                    ],
+                    borderWidth: 4,
+                    borderColor: '#fff',
+                    hoverOffset: 15,
+                    hoverBorderWidth: 4
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 13, weight: '600' },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
             }
         });
 
-        // Monthly Trends Bar Chart
-        new Chart(document.getElementById('monthlyChart'), {
+        // Monthly Trends Bar Chart - Modern gradient bars
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        const monthlyGradient = monthlyCtx.createLinearGradient(0, 0, 0, 300);
+        monthlyGradient.addColorStop(0, '#9b59b6');
+        monthlyGradient.addColorStop(1, '#8e44ad');
+
+        new Chart(monthlyCtx, {
             type: 'bar',
             data: {
                 labels: monthlyData.map(m => m.month),
                 datasets: [{
                     label: 'Monthly Bookings',
                     data: monthlyData.map(m => m.count),
-                    backgroundColor: '#9b59b6'
+                    backgroundColor: monthlyGradient,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    hoverBackgroundColor: '#8e44ad'
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    }
+                }
             }
         });
 
-        // Lab Usage Bar Chart
-        new Chart(document.getElementById('labChart'), {
+        // Lab Usage Bar Chart - Horizontal with gradient
+        const labCtx = document.getElementById('labChart').getContext('2d');
+        const labGradient = labCtx.createLinearGradient(0, 0, 400, 0);
+        labGradient.addColorStop(0, '#1abc9c');
+        labGradient.addColorStop(1, '#16a085');
+
+        new Chart(labCtx, {
             type: 'bar',
             data: {
                 labels: labData.map(l => l.lab_name),
                 datasets: [{
                     label: 'Bookings',
                     data: labData.map(l => l.booking_count),
-                    backgroundColor: '#1abc9c'
+                    backgroundColor: labGradient,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    hoverBackgroundColor: '#16a085'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y'
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    }
+                }
             }
         });
 
-        // Peak Hours Chart
-        new Chart(document.getElementById('hoursChart'), {
+        // Peak Hours Chart - Area style with gradient
+        const hoursCtx = document.getElementById('hoursChart').getContext('2d');
+        const hoursGradient = hoursCtx.createLinearGradient(0, 0, 0, 300);
+        hoursGradient.addColorStop(0, 'rgba(231, 76, 60, 0.4)');
+        hoursGradient.addColorStop(1, 'rgba(231, 76, 60, 0.01)');
+
+        new Chart(hoursCtx, {
             type: 'line',
             data: {
                 labels: hourData.map(h => {
@@ -393,14 +609,57 @@ while($row = $peak_hours->fetch_assoc()) {
                     label: 'Bookings per Hour',
                     data: hourData.map(h => h.count),
                     borderColor: '#e74c3c',
-                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    backgroundColor: hoursGradient,
+                    borderWidth: 3,
                     tension: 0.4,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#e74c3c',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            padding: 10
+                        }
+                    }
+                }
             }
         });
 
