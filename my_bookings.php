@@ -389,6 +389,7 @@ table tbody tr:last-child td {
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="mybookings.php" class="active"><span>📋</span> My Bookings</a></li>
+    <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
   <div class="logout-btn">

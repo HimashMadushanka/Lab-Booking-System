@@ -362,6 +362,7 @@ $find->bind_param('isss', $lab_id, $date, $start_time, $end_time);
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="mybookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
   <div class="logout-btn">

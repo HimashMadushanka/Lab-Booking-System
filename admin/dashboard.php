@@ -17,7 +17,7 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 <head>
   <title>Admin Dashboard</title>
   <style>
-    body { font-family: Arial; background: #ecf0f1; margin: 0; }
+    body { font-family: Arial; background: #b8eaf8ff; margin: 0; }
     .header { background: #2c3e50; color: white; padding: 15px; text-align: center; position: relative; }
     .header .logout-btn {
       color: white;

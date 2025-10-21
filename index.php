@@ -75,6 +75,7 @@ body {
   color: #94a3b8;
   font-size: 13px;
   margin-top: 5px;
+  text-align: center;
 }
 
 .sidebar-menu {
@@ -439,7 +440,7 @@ table tbody tr:last-child td {
   <ul class="sidebar-menu">
     <li><a href="index.php" class="active"><span>📊</span> Dashboard</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
-    <li><a href="mybookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
 
   </ul>

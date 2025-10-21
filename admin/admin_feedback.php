@@ -68,7 +68,7 @@ if ($rating_column_exists) {
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
+            background:#b8eaf8ff; 
             padding: 20px;
         }
         

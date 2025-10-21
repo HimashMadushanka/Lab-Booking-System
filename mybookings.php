@@ -397,8 +397,9 @@ button:active {
   
   <ul class="sidebar-menu">
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
-    <li><a href="book_lab.php" class="active"><span>➕</span> Book a Lab</a></li>
+    <li><a href="book_lab.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
   <div class="logout-btn">

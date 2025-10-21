@@ -159,6 +159,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .page-header {
             margin-bottom: 30px;
             text-align: center;
+            background-color: #95bcebff;
+            border: 2px solid black;
+            border-radius: 10px;
         }
 
         .page-header h2 {
@@ -169,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .page-header p {
-            color: #64748b;
+            color: #11181eff;
             font-size: 15px;
         }
 
