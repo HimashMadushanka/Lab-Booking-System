@@ -64,6 +64,8 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
+  <a href="admin_feedback.php">View User Feedback</a>
+
 
 </div>
 

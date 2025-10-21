@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    
     $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email=? LIMIT 1");
     $stmt->bind_param('s', $email);
     $stmt->execute();
@@ -164,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)) echo "<p style='color:red'>".esc($error)."</p>"; ?>
         </form>
         <div class="register-link">
-            Don't have an account? <a href="register.php">Register here</a>
+            Don't have an account? <a href="register.php">Register here</a><br />
             Login for Admin-<a href="admin/login.php">Login here</a>
         </div>
     </div>
