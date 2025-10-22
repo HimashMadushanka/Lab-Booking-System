@@ -457,7 +457,6 @@ button:active {
       <a href="index.php">← Back to Dashboard</a>
       <a href="my_bookings.php">📋 View My Bookings</a>
     </div>
-
   </div>
 </div>
 
