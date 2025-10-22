@@ -208,7 +208,7 @@ tr:hover {
 <body>
     <div class="header">
         <h1>📅 Manage Bookings</h1>
-        <p>Review and manage computer booking requests</p>
+        <p>Review and manage lab booking requests</p>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
 

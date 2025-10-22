@@ -70,5 +70,16 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 </div>
 
 </div>
+
+
+<!-- Replace the PDF export section in dashboard.php -->
+<div style="text-align: center; margin: 40px auto ; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px;">
+    <h3>📊 Export PDF Reports</h3>
+    <p style="color: #7f8c8d; margin-bottom: 15px;">Generate detailed reports with custom date ranges</p>
+    <a href="pdf_selector.php" style="background: #a759d1ff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+        📋 Generate Custom PDF Report
+    </a>
+</div>
+
 </body>
 </html>
