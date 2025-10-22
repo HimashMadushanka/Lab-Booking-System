@@ -115,6 +115,23 @@ if (isset($_POST['login'])) {
             color: #c33 !important;
             border: 1px solid #fcc;
         }
+
+         .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -126,6 +143,9 @@ if (isset($_POST['login'])) {
             <button name="login">Login</button>
             <?php if(isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
         </form>
+        <div class="register-link">
+            Login for User-<a href="../login.php">Login here</a>
+        </div>
     </div>
 </body>
 </html>

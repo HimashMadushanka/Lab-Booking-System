@@ -57,7 +57,7 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 
 <div class="cards">
   <div class="card"><h2><?= $total_users ?></h2><p>Users</p></div>
-  <div class="card"><h2><?= $computers ?></h2><p>Computers</p></div>
+  <div class="card"><h2><?= $computers ?></h2><p>Labs</p></div>
   <div class="card"><h2><?= $total_bookings ?></h2><p>Total Bookings</p></div>
   <div class="card"><h2><?= $pending ?></h2><p>Pending Approvals</p></div>
 </div>

@@ -13,6 +13,11 @@ $result = $conn->query("
     JOIN computers c ON b.computer_id=c.id
     ORDER BY b.date DESC
 ");
+
+// Stats for dashboard
+$total_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings")->fetch_assoc()['cnt'];
+$pending_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
+$approved_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved'")->fetch_assoc()['cnt'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -28,180 +33,254 @@ $result = $conn->query("
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background:#b8eaf8ff;
-    min-height: 100vh;
-    padding: 40px 20px;
+    padding: 20px;
 }
 
-h2 {
-    text-align: center;
-    color: black;
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
     margin-bottom: 30px;
-    font-size: 2.5em;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    text-decoration: underline;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    margin-bottom: 10px;
+}
+
+.logout-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    border-left: 4px solid #3498db;
+}
+
+.stat-card h3 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.booking-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 table { 
-    border-collapse: collapse;
     width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    background: white;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    border-radius: 10px;
-    overflow: hidden;
+    border-collapse: collapse;
 }
 
 th, td { 
-    border: none;
-    padding: 15px 10px;
-    text-align: center;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
 }
 
 th { 
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    background: #34495e;
     color: white;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.9em;
-}
-
-tr {
-    transition: all 0.3s ease;
-}
-
-tr:nth-child(even) {
-    background-color: #f8f9fa;
 }
 
 tr:hover {
-    background-color: #e3f2fd;
-    transform: scale(1.01);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    background: #f8f9fa;
 }
 
-td {
-    color: #333;
-    font-size: 0.95em;
-}
-
-a.button { 
-    display: inline-block;
-    padding: 8px 16px;
-    color: white;
-    text-decoration: none;
-    border-radius: 25px;
-    margin: 0 3px;
-    font-size: 0.85em;
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
     font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.approve { 
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+.status-pending {
+    background: #ffeaa7;
+    color: #e17055;
 }
 
-.approve:hover {
-    background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+.status-approved {
+    background: #55efc4;
+    color: #00b894;
 }
 
-.reject { 
-    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+.status-rejected {
+    background: #fab1a0;
+    color: #d63031;
 }
 
-.reject:hover {
-    background: linear-gradient(135deg, #a93226 0%, #c0392b 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4);
+.action-buttons {
+    display: flex;
+    gap: 5px;
 }
 
-.delete { 
-    background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
-.delete:hover {
-    background: linear-gradient(135deg, #d68910 0%, #e67e22 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+.btn-approve {
+    background: #27ae60;
+    color: white;
 }
 
-td:last-child {
-    white-space: nowrap;
+.btn-reject {
+    background: #e74c3c;
+    color: white;
 }
 
-@media (max-width: 768px) {
-    body {
-        padding: 20px 10px;
-    }
-    
-    h2 {
-        font-size: 1.8em;
-        margin-bottom: 20px;
-    }
-    
-    table {
-        font-size: 0.85em;
-    }
-    
-    th, td {
-        padding: 10px 5px;
-    }
-    
-    a.button {
-        padding: 6px 12px;
-        font-size: 0.75em;
-        margin: 2px;
-    }
+.btn-delete {
+    background: #e67e22;
+    color: white;
 }
-    .links { 
-       text-align: left; 
-       margin-top: 40px; 
-       margin-left: 40px;
-    }
 
-    .links a {
-      text-decoration: none; 
-      background: #2980b9; 
-      color: white;
-      padding: 10px 20px; 
-      border-radius: 5px; 
-      margin: 0 5px;
-    }
+.btn:hover {
+    opacity: 0.9;
+}
 
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.navigation {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.nav-btn {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 0 10px;
+    font-weight: 600;
+}
 </style>
 </head>
 <body>
-<h2>Manage Bookings</h2>
-<table>
-<tr><th>ID</th><th>User</th><th>Computer</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>
-<?php while($row = $result->fetch_assoc()): ?>
-<tr>
-  <td><?= $row['id'] ?></td>
-  <td><?= $row['user_name'] ?></td>
-  <td><?= $row['computer_code'] ?></td>
-  <td><?= $row['date'] ?></td>
-  <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>
-  <td><?= $row['status'] ?></td>
-  <td>
-    <?php if($row['status'] == 'pending'): ?>
-      <a href="approve.php?id=<?= $row['id'] ?>" class="button approve">Approve</a>
-      <a href="reject.php?id=<?= $row['id'] ?>" class="button reject">Reject</a>
-    <?php else: ?>
-      <?= ucfirst($row['status']) ?>
-      <a href="delete_booking.php?id=<?= $row['id'] ?>" class="button delete" onclick="return confirm('Are you sure you want to delete this booking?')">Delete</a>
-    <?php endif; ?>
-  </td>
-</tr>
-<?php endwhile; ?>
-</table>
-<div class="links">
-  <a href="dashboard.php">← Back to dashboard</a>
-  </div>
+    <div class="header">
+        <h1>📅 Manage Bookings</h1>
+        <p>Review and manage computer booking requests</p>
+        <a href="logout.php" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3><?= $total_bookings ?></h3>
+            <p>Total Bookings</p>
+        </div>
+        <div class="stat-card">
+            <h3><?= $pending_bookings ?></h3>
+            <p>Pending Bookings</p>
+        </div>
+        <div class="stat-card">
+            <h3><?= $approved_bookings ?></h3>
+            <p>Approved Bookings</p>
+        </div>
+    </div>
+
+    <!-- Booking Table -->
+    <div class="booking-table">
+        <?php if ($result->num_rows > 0): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Computer</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($row = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= $row['id'] ?></td>
+                        <td><strong><?= htmlspecialchars($row['user_name']) ?></strong></td>
+                        <td><?= htmlspecialchars($row['computer_code']) ?></td>
+                        <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
+                        <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>
+                        <td>
+                            <span class="status-badge status-<?= $row['status'] ?>">
+                                <?= ucfirst($row['status']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <?php if($row['status'] == 'pending'): ?>
+                                    <a href="approve.php?id=<?= $row['id'] ?>" class="btn btn-approve">Approve</a>
+                                    <a href="reject.php?id=<?= $row['id'] ?>" class="btn btn-reject">Reject</a>
+                                <?php else: ?>
+                                    <a href="delete_booking.php?id=<?= $row['id'] ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this booking?')">Delete</a>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="empty-state">
+                <div>📭</div>
+                <h3>No bookings yet</h3>
+                <p>There are no booking requests at the moment.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="navigation">
+        <a href="dashboard.php" class="nav-btn">← Back to Dashboard</a>
+    </div>
 </body>
 </html>
