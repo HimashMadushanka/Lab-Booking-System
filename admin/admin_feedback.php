@@ -292,7 +292,7 @@ if ($rating_column_exists) {
                         <th>Email</th>
                         <th>Subject</th>
                         <?php if ($rating_column_exists): ?>
-                            <th>Rating</th>
+                        <th>Rating</th>
                         <?php endif; ?>
                         <th>Message</th>
                         <th>Date</th>

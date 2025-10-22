@@ -44,7 +44,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
         $result = $find->get_result();
 
         if ($result->num_rows == 0) {
-            $error = "❌ No available computers in this lab for the selected time.";
+            $error = "❌ No available lab in this lab for the selected time.";
         } else {
             $row = $result->fetch_assoc();
             $computer_id = $row['id'];

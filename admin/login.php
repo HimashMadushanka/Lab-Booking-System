@@ -132,6 +132,7 @@ if (isset($_POST['login'])) {
         .register-link a:hover {
             text-decoration: underline;
         }
+        
     </style>
 </head>
 <body>
