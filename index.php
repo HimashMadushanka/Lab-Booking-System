@@ -46,13 +46,26 @@ while($booking = $calendar_bookings_result->fetch_assoc()) {
     }
     $calendar_data[$date][] = $booking;
 }
+
+// --- NEW: Fetch labs for the Available Labs section ---
+$labs_query = "
+    SELECT l.*, 
+           COUNT(c.id) as total_computers,
+           SUM(CASE WHEN c.status = 'available' THEN 1 ELSE 0 END) as available_computers
+    FROM labs l 
+    LEFT JOIN computers c ON l.id = c.lab_id 
+    GROUP BY l.id 
+    ORDER BY available_computers DESC, l.name
+    LIMIT 4
+";
+$labs_result = $conn->query($labs_query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Dashboard | Lab Management</title>
+<title>User Dashboard | LabEase</title>
 
 <style>
 * {
@@ -290,6 +303,191 @@ body {
   font-size: 14px;
   color: #64748b;
   font-weight: 500;
+}
+
+/* NEW: Available Labs Section */
+.labs-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.section-header {
+  padding: 25px 30px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  color: #1e293b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-primary {
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.labs-grid {
+  padding: 25px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.lab-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.lab-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.lab-title h3 {
+  font-size: 18px;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.lab-title p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.lab-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.capacity-info {
+  margin-bottom: 15px;
+}
+
+.capacity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.capacity-label {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.capacity-value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.stats-grid-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stat-mini {
+  text-align: center;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.stat-mini-number {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.stat-mini-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.lab-action {
+  display: block;
+  text-align: center;
+  padding: 10px 15px;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.lab-action:hover {
+  background: #2563eb;
+}
+
+.empty-labs {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+.empty-labs-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  opacity: 0.3;
 }
 
 /* NEW: Calendar Modal Styles */
@@ -594,38 +792,6 @@ body {
   overflow: hidden;
 }
 
-.section-header {
-  padding: 25px 30px;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.section-header h2 {
-  font-size: 20px;
-  color: #1e293b;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-primary {
-  padding: 10px 20px;
-  background: #3b82f6;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
 .table-wrapper {
   overflow-x: auto;
 }
@@ -751,6 +917,10 @@ table tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
   
+  .labs-grid {
+    grid-template-columns: 1fr;
+  }
+  
   table th, table td {
     padding: 12px 15px;
     font-size: 13px;
@@ -781,8 +951,8 @@ table tbody tr:last-child td {
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <h2>🖥️ Lab Manager</h2>
-    <p>Computer Lab System</p>
+    <h2>🖥️ LabEase</h2>
+    <p>Computer Lab Booking System</p>
   </div>
   
   <ul class="sidebar-menu">
@@ -839,6 +1009,90 @@ table tbody tr:last-child td {
         <h3 style="cursor: pointer;">Calendar</h3>
         <p>View Lab Schedule</p>
       </div>
+    </div>
+  </div>
+
+  <!-- NEW: Available Labs Section -->
+  <div class="labs-section">
+    <div class="section-header">
+      <h2>🏢 Available Labs</h2>
+      <a href="new labs.php" class="btn-primary">View All Labs</a>
+    </div>
+    
+    <div class="labs-grid">
+      <?php if ($labs_result->num_rows > 0): 
+          while($lab = $labs_result->fetch_assoc()): 
+              $available_percentage = $lab['total_computers'] > 0 ? 
+                  round(($lab['available_computers'] / $lab['total_computers']) * 100) : 0;
+              
+              // Determine status color based on availability
+              if ($available_percentage >= 70) {
+                  $status_color = '#10b981';
+                  $status_text = 'High Availability';
+              } elseif ($available_percentage >= 30) {
+                  $status_color = '#f59e0b';
+                  $status_text = 'Moderate Availability';
+              } else {
+                  $status_color = '#ef4444';
+                  $status_text = 'Low Availability';
+              }
+      ?>
+      <div class="lab-card">
+        <!-- Lab Header -->
+        <div class="lab-header">
+          <div class="lab-title">
+            <h3><?= htmlspecialchars($lab['name']) ?></h3>
+            <p>📍 <?= htmlspecialchars($lab['location']) ?></p>
+          </div>
+          <div class="lab-status" style="background: <?= $status_color ?>20; color: <?= $status_color ?>; border: 1px solid <?= $status_color ?>40;">
+            <?= $status_text ?>
+          </div>
+        </div>
+        
+        <!-- Capacity Info -->
+        <div class="capacity-info">
+          <div class="capacity-row">
+            <span class="capacity-label">Total Capacity:</span>
+            <span class="capacity-value"><?= $lab['capacity'] ?> computers</span>
+          </div>
+          
+          <!-- Availability Progress Bar -->
+          <div style="margin-bottom: 8px;">
+            <div class="capacity-row">
+              <span class="capacity-label">Available Now:</span>
+              <span class="capacity-value"><?= $lab['available_computers'] ?>/<?= $lab['total_computers'] ?></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: <?= $available_percentage ?>%; background: <?= $status_color ?>;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="stats-grid-mini">
+          <div class="stat-mini">
+            <div class="stat-mini-number" style="color: #3b82f6;"><?= $lab['available_computers'] ?></div>
+            <div class="stat-mini-label">Available</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-number" style="color: #8b5cf6;"><?= $lab['total_computers'] - $lab['available_computers'] ?></div>
+            <div class="stat-mini-label">In Use</div>
+          </div>
+        </div>
+        
+        <!-- Quick Action Button -->
+        <a href="create.php?lab=<?= $lab['id'] ?>" class="lab-action">
+          🖥️ Book This Lab
+        </a>
+      </div>
+      <?php endwhile; ?>
+      <?php else: ?>
+      <div class="empty-labs">
+        <div class="empty-labs-icon">🏢</div>
+        <h3 style="color: #64748b; margin-bottom: 10px;">No Labs Available</h3>
+        <p>There are currently no labs configured in the system.</p>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 
