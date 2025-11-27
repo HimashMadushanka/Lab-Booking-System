@@ -7,10 +7,11 @@ if (!isset($_SESSION['admin'])) {
 }
 
 $result = $conn->query("
-    SELECT b.*, u.name AS user_name, c.code AS computer_code
+    SELECT b.*, u.name AS user_name, l.name AS lab_name
     FROM bookings b
     JOIN users u ON b.user_id=u.id
     JOIN computers c ON b.computer_id=c.id
+    JOIN labs l ON c.lab_id=l.id
     ORDER BY b.date DESC
 ");
 
@@ -236,7 +237,7 @@ tr:hover {
                     <tr>
                         <th>ID</th>
                         <th>User</th>
-                        <th>Computer</th>
+                        <th>Lab</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Status</th>
@@ -248,7 +249,7 @@ tr:hover {
                     <tr>
                         <td><?= $row['id'] ?></td>
                         <td><strong><?= htmlspecialchars($row['user_name']) ?></strong></td>
-                        <td><?= htmlspecialchars($row['computer_code']) ?></td>
+                        <td><?= htmlspecialchars($row['lab_name']) ?></td>
                         <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                         <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>
                         <td>

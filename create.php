@@ -62,6 +62,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
             } else {
                 $error = "⚠️ Failed to create booking. Try again.";
             }
+            
         }
     }
 }
@@ -71,7 +72,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book a Computer | Lab Management</title>
+  <title>Book a Computer | LabEase</title>
   <style>
     * {
       margin: 0;
@@ -357,14 +358,14 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <h2>🖥️ Lab Manager</h2>
-    <p>Computer Lab System</p>
+    <h2>🖥️ LabEase</h2>
+    <p>Computer Booking Lab System</p>
   </div>
   
   <ul class="sidebar-menu">
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
-    <li><a href="mybookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
@@ -378,7 +379,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
   <div class="booking-container">
     
     <div class="page-header">
-      <h2>📅 Book a Computer</h2>
+      <h2>📅 Book a Lab</h2>
       <p>Select your preferred lab and time slot</p>
     </div>
 
@@ -421,7 +422,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
         </div>
       </div>
 
-      <button type="submit" name="book">🎯 Book Computer</button>
+      <button type="submit" name="book">🎯 Book Lab</button>
     </form>
 
     <div class="back-link">
