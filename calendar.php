@@ -48,7 +48,7 @@ $prev_month->modify('-1 month');
 $next_month = clone $current_view_date;
 $next_month->modify('+1 month');
 
-// Get bookings for the selected date - UPDATED QUERY WITH LAB JOIN
+// Get bookings for the selected date
 $stmt = $conn->prepare("
     SELECT b.*, l.name as lab_name, c.code as computer_code, u.name as user_name 
     FROM bookings b 
@@ -65,7 +65,10 @@ $bookings = $stmt->get_result();
 // Get bookings count for each day in current month for calendar
 $current_month = date('Y-m', strtotime($selected_date));
 $bookings_count_stmt = $conn->prepare("
-    SELECT date, COUNT(*) as booking_count 
+    SELECT date, COUNT(*) as booking_count,
+           SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved_count,
+           SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending_count,
+           SUM(CASE WHEN status='rejected' THEN 1 ELSE 0 END) as rejected_count
     FROM bookings 
     WHERE DATE_FORMAT(date, '%Y-%m') = ? 
     GROUP BY date
@@ -76,10 +79,10 @@ $bookings_count_result = $bookings_count_stmt->get_result();
 
 $bookings_per_day = [];
 while($row = $bookings_count_result->fetch_assoc()) {
-    $bookings_per_day[$row['date']] = $row['booking_count'];
+    $bookings_per_day[$row['date']] = $row;
 }
 
-// Get detailed bookings for calendar - UPDATED QUERY WITH LAB JOIN
+// Get detailed bookings for calendar
 $month_bookings_stmt = $conn->prepare("
     SELECT b.date, b.start_time, b.end_time, b.status, 
            l.name as lab_name, 
@@ -461,16 +464,17 @@ body {
   background: #2563eb;
 }
 
-/* Year/Month Selector */
+/* Enhanced Year/Month Selector */
 .year-month-selector {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-left: 15px;
+  position: relative;
 }
 
 .year-month-selector select {
-  padding: 8px 12px;
+  padding: 8px 35px 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: white;
@@ -479,6 +483,10 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
 
 .year-month-selector select:hover {
@@ -489,6 +497,52 @@ body {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Quick Year Jump */
+.year-jump-btn {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.year-jump-btn:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  gap: 5px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.view-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn.active {
+  background: white;
+  color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 /* Calendar Grid */
@@ -615,6 +669,31 @@ body {
   font-weight: 700;
 }
 
+/* Status Mini Indicators */
+.day-status-indicators {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-dot.approved {
+  background: #10b981;
+}
+
+.status-dot.pending {
+  background: #f59e0b;
+}
+
+.status-dot.rejected {
+  background: #ef4444;
+}
+
 .more-bookings {
   font-size: 10px;
   color: #6b7280;
@@ -623,6 +702,39 @@ body {
   background: #f3f4f6;
   border-radius: 3px;
   margin-top: 2px;
+}
+
+/* Filter Pills */
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  padding: 15px 30px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #64748b;
+}
+
+.filter-pill:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.filter-pill.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
 }
 
 /* Legend */
@@ -677,6 +789,9 @@ body {
 .section-header {
   padding: 25px 30px;
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .section-header h2 {
@@ -686,6 +801,39 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.section-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 13px;
+}
+
+.section-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.section-stat .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.section-stat.approved .dot {
+  background: #10b981;
+}
+
+.section-stat.pending .dot {
+  background: #f59e0b;
+}
+
+.section-stat.rejected .dot {
+  background: #ef4444;
 }
 
 .table-wrapper {
@@ -926,8 +1074,6 @@ table tbody tr:last-child td {
         <p>Approved Bookings</p>
       </div>
     </div>
-    
-
   </div>
 
   <!-- Calendar Section -->
@@ -938,13 +1084,14 @@ table tbody tr:last-child td {
       </div>
       <div class="calendar-controls">
         <div class="month-navigator">
-          <a href="?date=<?= $prev_month->format('Y-m-d') ?>" class="nav-btn">‹</a>
+          <a href="?date=<?= $prev_month->format('Y-m-d') ?>" class="nav-btn" title="Previous Month">‹</a>
           <span class="current-month"><?= $current_view_date->format('F Y') ?></span>
-          <a href="?date=<?= $next_month->format('Y-m-d') ?>" class="nav-btn">›</a>
+          <a href="?date=<?= $next_month->format('Y-m-d') ?>" class="nav-btn" title="Next Month">›</a>
         </div>
         
-        <!-- Year/Month Selector -->
+        <!-- Enhanced Year/Month Selector with Quick Jump -->
         <div class="year-month-selector">
+          <button class="year-jump-btn" onclick="jumpYears(-1)" title="Previous Year">‹‹</button>
           <select id="year-select" onchange="goToYearMonth()">
             <?php foreach($years as $year): ?>
               <option value="<?= $year ?>" <?= $year == $selected_year ? 'selected' : '' ?>>
@@ -959,11 +1106,20 @@ table tbody tr:last-child td {
               </option>
             <?php endforeach; ?>
           </select>
+          <button class="year-jump-btn" onclick="jumpYears(1)" title="Next Year">››</button>
         </div>
         
         <a href="?date=<?= date('Y-m-d') ?>" class="today-btn">Today</a>
         <a href="create.php" class="btn-primary">+ New Booking</a>
       </div>
+    </div>
+    
+    <!-- Filter Pills -->
+    <div class="filter-pills">
+      <div class="filter-pill active" data-filter="all">All Bookings</div>
+      <div class="filter-pill" data-filter="approved">Approved Only</div>
+      <div class="filter-pill" data-filter="pending">Pending Only</div>
+      <div class="filter-pill" data-filter="my-bookings">My Bookings</div>
     </div>
     
     <div class="calendar-wrapper">
@@ -995,6 +1151,18 @@ table tbody tr:last-child td {
         <div class="legend-color has-bookings"></div>
         <span>Has Bookings</span>
       </div>
+      <div class="legend-item">
+        <div class="status-dot approved"></div>
+        <span>Approved</span>
+      </div>
+      <div class="legend-item">
+        <div class="status-dot pending"></div>
+        <span>Pending</span>
+      </div>
+      <div class="legend-item">
+        <div class="status-dot rejected"></div>
+        <span>Rejected</span>
+      </div>
     </div>
   </div>
 
@@ -1002,10 +1170,30 @@ table tbody tr:last-child td {
   <div class="bookings-section">
     <div class="section-header">
       <h2>📋 Bookings for <?= date('F j, Y', strtotime($selected_date)) ?></h2>
+      <?php
+        $day_bookings = $bookings->fetch_all(MYSQLI_ASSOC);
+        $approved = count(array_filter($day_bookings, fn($b) => $b['status'] == 'approved'));
+        $pending = count(array_filter($day_bookings, fn($b) => $b['status'] == 'pending'));
+        $rejected = count(array_filter($day_bookings, fn($b) => $b['status'] == 'rejected'));
+      ?>
+      <div class="section-stats">
+        <div class="section-stat approved">
+          <div class="dot"></div>
+          <span><?= $approved ?> Approved</span>
+        </div>
+        <div class="section-stat pending">
+          <div class="dot"></div>
+          <span><?= $pending ?> Pending</span>
+        </div>
+        <div class="section-stat rejected">
+          <div class="dot"></div>
+          <span><?= $rejected ?> Rejected</span>
+        </div>
+      </div>
     </div>
     
     <div class="table-wrapper">
-      <?php if($bookings->num_rows > 0): ?>
+      <?php if(count($day_bookings) > 0): ?>
         <table>
           <thead>
             <tr>
@@ -1017,9 +1205,8 @@ table tbody tr:last-child td {
             </tr>
           </thead>
           <tbody>
-            <?php while($b = $bookings->fetch_assoc()): ?>
+            <?php foreach($day_bookings as $b): ?>
             <tr>
-              <!-- UPDATED: Use lab_name instead of code -->
               <td><strong><?= htmlspecialchars($b['lab_name']) ?></strong></td>
               <td>
                 <?= htmlspecialchars($b['user_name']) ?>
@@ -1035,7 +1222,7 @@ table tbody tr:last-child td {
                 </span>
               </td>
             </tr>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
           </tbody>
         </table>
       <?php else: ?>
@@ -1051,7 +1238,9 @@ table tbody tr:last-child td {
 </div>
 
 <script>
-// Enhanced JavaScript for calendar generation
+// Enhanced JavaScript for calendar generation with filtering
+let currentFilter = 'all';
+
 document.addEventListener('DOMContentLoaded', function() {
     const selectedDate = new Date('<?= $selected_date ?>');
     const today = new Date();
@@ -1074,103 +1263,156 @@ document.addEventListener('DOMContentLoaded', function() {
     const detailedBookings = <?= json_encode($detailed_bookings) ?>;
     const currentUserId = <?= $user_id ?>;
     
-    // Clear calendar
-    calendarDays.innerHTML = '';
+    // Filter functionality
+    const filterPills = document.querySelectorAll('.filter-pill');
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            filterPills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.getAttribute('data-filter');
+            renderCalendar();
+        });
+    });
     
-    // Add previous month's trailing days
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-        const prevDay = prevMonthDays - i;
-        const dayElement = createDayElement(prevDay, true);
-        calendarDays.appendChild(dayElement);
-    }
-    
-    // Add current month's days
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
-        dayDate.setHours(0, 0, 0, 0);
+    function renderCalendar() {
+        // Clear calendar
+        calendarDays.innerHTML = '';
         
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        
-        // Check if today
-        if (dayDate.getTime() === today.getTime()) {
-            dayElement.classList.add('today');
+        // Add previous month's trailing days
+        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+            const prevDay = prevMonthDays - i;
+            const dayElement = createDayElement(prevDay, true);
+            calendarDays.appendChild(dayElement);
         }
         
-        // Check if selected
-        if (dateStr === '<?= $selected_date ?>') {
-            dayElement.classList.add('selected');
-        }
-        
-        // Check if has bookings
-        const bookingCount = bookingsPerDay[dateStr] || 0;
-        if (bookingCount > 0) {
-            dayElement.classList.add('has-bookings');
-        }
-        
-        // Click handler
-        dayElement.onclick = function() {
-            window.location.href = `calendar.php?date=${dateStr}`;
-        };
-        
-        // Day number
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'day-number';
-        dayNumber.textContent = day;
-        dayElement.appendChild(dayNumber);
-        
-        // Booking count badge
-        if (bookingCount > 0) {
-            const badge = document.createElement('div');
-            badge.className = 'booking-count-badge';
-            badge.textContent = bookingCount;
-            dayElement.appendChild(badge);
-        }
-        
-        // Day bookings container
-        const dayBookings = document.createElement('div');
-        dayBookings.className = 'day-bookings';
-        
-        if (detailedBookings[dateStr]) {
-            const bookings = detailedBookings[dateStr];
-            const displayLimit = 3;
+        // Add current month's days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+            dayDate.setHours(0, 0, 0, 0);
             
-            // Show first few bookings
-            bookings.slice(0, displayLimit).forEach(booking => {
-                const bookingPreview = document.createElement('div');
-                bookingPreview.className = `booking-preview status-${booking.status.toLowerCase()}`;
-                
-                const startTime = formatTime(booking.start_time);
-                const isUserBooking = booking.booking_user_id == currentUserId;
-                
-                // UPDATED: Use lab_name instead of code
-                bookingPreview.textContent = `${booking.lab_name} ${startTime}${isUserBooking ? ' ★' : ''}`;
-                bookingPreview.title = `${booking.lab_name}: ${startTime} - ${formatTime(booking.end_time)}\nBooked by: ${booking.user_name}\nStatus: ${booking.status}`;
-                
-                dayBookings.appendChild(bookingPreview);
-            });
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
             
-            // Show "more" indicator
-            if (bookings.length > displayLimit) {
-                const moreBookings = document.createElement('div');
-                moreBookings.className = 'more-bookings';
-                moreBookings.textContent = `+${bookings.length - displayLimit} more`;
-                dayBookings.appendChild(moreBookings);
+            // Check if today
+            if (dayDate.getTime() === today.getTime()) {
+                dayElement.classList.add('today');
             }
+            
+            // Check if selected
+            if (dateStr === '<?= $selected_date ?>') {
+                dayElement.classList.add('selected');
+            }
+            
+            // Filter bookings based on current filter
+            let filteredBookings = detailedBookings[dateStr] || [];
+            if (currentFilter === 'approved') {
+                filteredBookings = filteredBookings.filter(b => b.status === 'approved');
+            } else if (currentFilter === 'pending') {
+                filteredBookings = filteredBookings.filter(b => b.status === 'pending');
+            } else if (currentFilter === 'my-bookings') {
+                filteredBookings = filteredBookings.filter(b => b.booking_user_id == currentUserId);
+            }
+            
+            const bookingCount = filteredBookings.length;
+            
+            // Check if has bookings
+            if (bookingCount > 0) {
+                dayElement.classList.add('has-bookings');
+            }
+            
+            // Click handler
+            dayElement.onclick = function() {
+                window.location.href = `calendar.php?date=${dateStr}`;
+            };
+            
+            // Day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayElement.appendChild(dayNumber);
+            
+            // Booking count badge
+            if (bookingCount > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'booking-count-badge';
+                badge.textContent = bookingCount;
+                dayElement.appendChild(badge);
+            }
+            
+            // Day bookings container
+            const dayBookings = document.createElement('div');
+            dayBookings.className = 'day-bookings';
+            
+            if (filteredBookings.length > 0) {
+                const displayLimit = 3;
+                
+                // Show first few bookings
+                filteredBookings.slice(0, displayLimit).forEach(booking => {
+                    const bookingPreview = document.createElement('div');
+                    bookingPreview.className = `booking-preview status-${booking.status.toLowerCase()}`;
+                    
+                    const startTime = formatTime(booking.start_time);
+                    const isUserBooking = booking.booking_user_id == currentUserId;
+                    
+                    bookingPreview.textContent = `${booking.lab_name} ${startTime}${isUserBooking ? ' ★' : ''}`;
+                    bookingPreview.title = `${booking.lab_name}: ${startTime} - ${formatTime(booking.end_time)}\nBooked by: ${booking.user_name}\nStatus: ${booking.status}`;
+                    
+                    dayBookings.appendChild(bookingPreview);
+                });
+                
+                // Show "more" indicator
+                if (filteredBookings.length > displayLimit) {
+                    const moreBookings = document.createElement('div');
+                    moreBookings.className = 'more-bookings';
+                    moreBookings.textContent = `+${filteredBookings.length - displayLimit} more`;
+                    dayBookings.appendChild(moreBookings);
+                }
+            }
+            
+            // Add status indicators
+            if (bookingsPerDay[dateStr]) {
+                const indicators = document.createElement('div');
+                indicators.className = 'day-status-indicators';
+                
+                const stats = bookingsPerDay[dateStr];
+                if (stats.approved_count > 0) {
+                    for (let i = 0; i < Math.min(stats.approved_count, 3); i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'status-dot approved';
+                        indicators.appendChild(dot);
+                    }
+                }
+                if (stats.pending_count > 0) {
+                    for (let i = 0; i < Math.min(stats.pending_count, 3); i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'status-dot pending';
+                        indicators.appendChild(dot);
+                    }
+                }
+                if (stats.rejected_count > 0) {
+                    for (let i = 0; i < Math.min(stats.rejected_count, 3); i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'status-dot rejected';
+                        indicators.appendChild(dot);
+                    }
+                }
+                
+                dayElement.appendChild(indicators);
+            }
+            
+            dayElement.appendChild(dayBookings);
+            calendarDays.appendChild(dayElement);
         }
         
-        dayElement.appendChild(dayBookings);
-        calendarDays.appendChild(dayElement);
-    }
-    
-    // Add next month's leading days
-    const totalCells = firstDayOfWeek + daysInMonth;
-    const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-    
-    for (let day = 1; day <= remainingCells; day++) {
-        const dayElement = createDayElement(day, true);
-        calendarDays.appendChild(dayElement);
+        // Add next month's leading days
+        const totalCells = firstDayOfWeek + daysInMonth;
+        const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+        
+        for (let day = 1; day <= remainingCells; day++) {
+            const dayElement = createDayElement(day, true);
+            calendarDays.appendChild(dayElement);
+        }
     }
     
     // Helper function to create day element for other months
@@ -1197,6 +1439,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const displayHour = hour % 12 || 12;
         return `${displayHour}:${minutes}${ampm}`;
     }
+    
+    // Initial render
+    renderCalendar();
 });
 
 // Function to navigate to selected year and month
@@ -1205,6 +1450,41 @@ function goToYearMonth() {
     const month = document.getElementById('month-select').value;
     window.location.href = `calendar.php?year=${year}&month=${month}`;
 }
+
+// Quick year jump function
+function jumpYears(direction) {
+    const yearSelect = document.getElementById('year-select');
+    const currentYear = parseInt(yearSelect.value);
+    const newYear = currentYear + direction;
+    
+    // Check if new year exists in options
+    const options = Array.from(yearSelect.options);
+    const yearExists = options.some(option => parseInt(option.value) === newYear);
+    
+    if (yearExists) {
+        yearSelect.value = newYear;
+        goToYearMonth();
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Alt + Left Arrow: Previous month
+    if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        document.querySelector('.month-navigator .nav-btn:first-child').click();
+    }
+    // Alt + Right Arrow: Next month
+    else if (e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        document.querySelector('.month-navigator .nav-btn:last-child').click();
+    }
+    // Alt + T: Go to today
+    else if (e.altKey && e.key === 't') {
+        e.preventDefault();
+        document.querySelector('.today-btn').click();
+    }
+});
 </script>
 
 </body>

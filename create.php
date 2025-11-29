@@ -2,7 +2,6 @@
 session_start();
 require 'db.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
@@ -12,67 +11,83 @@ if (!isset($_SESSION['user_id'])) {
 $labs = $conn->query("SELECT * FROM labs ORDER BY id");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
-    $lab_id = $_POST['lab_id'] ?? null;
-    $date = $_POST['date'] ?? null;
-    $start_time = $_POST['start_time'] ?? null;
-    $end_time = $_POST['end_time'] ?? null;
+    $lab_id = intval($_POST['lab_id'] ?? 0);
+    $date = $conn->real_escape_string($_POST['date'] ?? '');
+    $start_time = $conn->real_escape_string($_POST['start_time'] ?? '');
+    $end_time = $conn->real_escape_string($_POST['end_time'] ?? '');
 
+    // Validation
     if (!$lab_id || !$date || !$start_time || !$end_time) {
         $error = "⚠️ All fields are required.";
+    } elseif (strtotime($end_time) <= strtotime($start_time)) {
+        $error = "❌ End time must be after start time.";
     } else {
-        // Find an available computer automatically
-$find = $conn->prepare("
-    SELECT id, code FROM computers
-    WHERE lab_id=? AND status='available'
-    AND id NOT IN (
-        SELECT computer_id FROM bookings
-        WHERE date=? 
-        AND status IN ('pending','approved')
-        AND (
-            ? < end_time AND ? > start_time
-        )
-        AND computer_id IN (
-            SELECT id FROM computers WHERE lab_id=?
-        )
-    )
-    LIMIT 1
-");
-$find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
-
-
+        // Find available computers in the selected lab
+        $find = $conn->prepare("
+            SELECT id, code FROM computers 
+            WHERE lab_id = ? AND status = 'available'
+        ");
+        $find->bind_param('i', $lab_id);
         $find->execute();
         $result = $find->get_result();
 
         if ($result->num_rows == 0) {
-            $error = "❌ No available lab in this lab for the selected time.";
+            $error = "❌ No computers available in this lab.";
         } else {
-            $row = $result->fetch_assoc();
-            $computer_id = $row['id'];
-            $computer_code = $row['code'];
+            // Let user choose a computer or assign first available
+            $computers = [];
+            while ($row = $result->fetch_assoc()) {
+                $computers[] = $row;
+            }
+            
+            // Use first available computer (or you can modify to let user choose)
+            $computer_id = $computers[0]['id'];
+            $computer_code = $computers[0]['code'];
 
-            // Insert booking
-            $ins = $conn->prepare("
-                INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
-                VALUES (?, ?, ?, ?, ?, 'pending')
+            // Check if this time slot already has an approved booking
+            $check_approved = $conn->prepare("
+                SELECT id FROM bookings 
+                WHERE computer_id = ? 
+                AND date = ? 
+                AND status = 'approved'
+                AND (
+                    (? < end_time AND ? > start_time)
+                )
             ");
-            $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
+            $check_approved->bind_param('issss', $computer_id, $date, $start_time, $end_time, $start_time, $end_time);
+            $check_approved->execute();
+            $approved_result = $check_approved->get_result();
 
-            if ($ins->execute()) {
-                $success = "✅ Booking requested successfully. Assigned computer: <b>$computer_code</b>";
+            if ($approved_result->num_rows > 0) {
+                $error = "❌ This time slot already has an approved booking. Please choose a different time or computer.";
             } else {
-                $error = "⚠️ Failed to create booking. Try again.";
+                // Insert booking as pending
+                $ins = $conn->prepare("
+                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status, approval_priority)
+                    VALUES (?, ?, ?, ?, ?, 'pending', 0)
+                ");
+                $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
+
+                if ($ins->execute()) {
+                    $success = "✅ Booking requested successfully for computer: <b>$computer_code</b>. Waiting for admin approval.";
+                } else {
+                    $error = "⚠️ Failed to create booking. Try again.";
+                }
             }
         }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book a Computer | Lab Management</title>
+  <!-- Keep your existing CSS styles -->
   <style>
+    /* Your existing CSS styles here */
     * {
       margin: 0;
       padding: 0;
@@ -85,7 +100,6 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
       min-height: 100vh;
     }
 
-    /* Sidebar Navigation */
     .sidebar {
       position: fixed;
       left: 0;
@@ -173,7 +187,6 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
       background: #b91c1c;
     }
 
-    /* Main Content */
     .main-content {
       margin-left: 260px;
       padding: 40px;
@@ -322,7 +335,6 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
       color: #3b82f6;
     }
 
-    /* Responsive */
     @media (max-width: 1024px) {
       .sidebar {
         transform: translateX(-100%);
@@ -399,7 +411,8 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
           <?php
           mysqli_data_seek($labs, 0);
           while($lab = $labs->fetch_assoc()):
-            echo "<option value='{$lab['id']}'>{$lab['name']}</option>";
+            $selected = ($lab_id == $lab['id']) ? 'selected' : '';
+            echo "<option value='{$lab['id']}' $selected>{$lab['name']}</option>";
           endwhile;
           ?>
         </select>
@@ -407,23 +420,25 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
 
       <div class="form-group">
         <label for="date">📆 Date</label>
-        <input type="date" name="date" id="date" required min="<?= date('Y-m-d') ?>">
+        <input type="date" name="date" id="date" required min="<?= date('Y-m-d') ?>" value="<?= htmlspecialchars($date ?? '') ?>">
       </div>
 
       <div class="time-group">
         <div class="form-group">
           <label for="start_time">🕐 Start Time</label>
-          <input type="time" name="start_time" id="start_time" required>
+          <input type="time" name="start_time" id="start_time" required value="<?= htmlspecialchars($start_time ?? '') ?>">
         </div>
 
         <div class="form-group">
           <label for="end_time">🕐 End Time</label>
-          <input type="time" name="end_time" id="end_time" required>
+          <input type="time" name="end_time" id="end_time" required value="<?= htmlspecialchars($end_time ?? '') ?>">
         </div>
       </div>
 
       <button type="submit" name="book">🎯 Book Computer</button>
     </form>
+
+
 
     <div class="back-link">
       <a href="index.php">← Back to Dashboard</a>

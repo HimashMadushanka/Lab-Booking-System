@@ -6,12 +6,30 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
+// Handle status messages
+if (isset($_SESSION['error'])) {
+    $error_message = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+
+if (isset($_SESSION['success'])) {
+    $success_message = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
+
 $result = $conn->query("
-    SELECT b.*, u.name AS user_name, c.code AS computer_code
+    SELECT b.*, u.name AS user_name, c.code AS computer_code, l.name as lab_name
     FROM bookings b
     JOIN users u ON b.user_id=u.id
     JOIN computers c ON b.computer_id=c.id
-    ORDER BY b.date DESC
+    JOIN labs l ON c.lab_id = l.id
+    ORDER BY 
+        CASE 
+            WHEN b.status = 'pending' THEN 1
+            WHEN b.status = 'approved' THEN 2
+            ELSE 3
+        END,
+        b.date DESC
 ");
 
 // Stats for dashboard
@@ -203,6 +221,35 @@ tr:hover {
     margin: 0 10px;
     font-weight: 600;
 }
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: 600;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.conflict-warning {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-top: 5px;
+    display: inline-block;
+}
 </style>
 </head>
 <body>
@@ -211,6 +258,15 @@ tr:hover {
         <p>Review and manage lab booking requests</p>
         <a href="logout.php" class="logout-btn">Logout</a>
     </div>
+
+    <!-- Status Messages -->
+    <?php if (isset($error_message)): ?>
+        <div class="alert alert-error">❌ <?= $error_message ?></div>
+    <?php endif; ?>
+
+    <?php if (isset($success_message)): ?>
+        <div class="alert alert-success">✅ <?= $success_message ?></div>
+    <?php endif; ?>
 
     <!-- Stats -->
     <div class="stats-grid">
@@ -237,6 +293,7 @@ tr:hover {
                         <th>ID</th>
                         <th>User</th>
                         <th>Computer</th>
+                        <th>Lab</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Status</th>
@@ -249,6 +306,7 @@ tr:hover {
                         <td><?= $row['id'] ?></td>
                         <td><strong><?= htmlspecialchars($row['user_name']) ?></strong></td>
                         <td><?= htmlspecialchars($row['computer_code']) ?></td>
+                        <td><?= htmlspecialchars($row['lab_name']) ?></td>
                         <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                         <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>
                         <td>
@@ -259,10 +317,13 @@ tr:hover {
                         <td>
                             <div class="action-buttons">
                                 <?php if($row['status'] == 'pending'): ?>
-                                    <a href="approve.php?id=<?= $row['id'] ?>" class="btn btn-approve">Approve</a>
-                                    <a href="reject.php?id=<?= $row['id'] ?>" class="btn btn-reject">Reject</a>
+                                    <a href="approve.php?id=<?= $row['id'] ?>" class="btn btn-approve" 
+                                       onclick="return confirm('Approve this booking?')">Approve</a>
+                                    <a href="reject.php?id=<?= $row['id'] ?>" class="btn btn-reject"
+                                       onclick="return confirm('Reject this booking?')">Reject</a>
                                 <?php else: ?>
-                                    <a href="delete_booking.php?id=<?= $row['id'] ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this booking?')">Delete</a>
+                                    <a href="delete_booking.php?id=<?= $row['id'] ?>" class="btn btn-delete" 
+                                       onclick="return confirm('Are you sure you want to delete this booking?')">Delete</a>
                                 <?php endif; ?>
                             </div>
                         </td>
