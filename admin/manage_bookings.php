@@ -355,6 +355,7 @@ tr:hover {
         <?php endif; ?>
     </div>
 
+    
     <div class="navigation">
         <a href="dashboard.php" class="nav-btn">← Back to Dashboard</a>
     </div>
