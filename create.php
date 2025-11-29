@@ -74,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
                     $error = "⚠️ Failed to create booking. Try again.";
                 }
             }
+            
         }
     }
 }
@@ -84,8 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
   <title>Book a Computer | Lab Management</title>
   <!-- Keep your existing CSS styles -->
+=======
+  <title>Book a Computer | LabEase</title>
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
   <style>
     /* Your existing CSS styles here */
     * {
@@ -369,8 +374,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <h2>🖥️ Lab Manager</h2>
-    <p>Computer Lab System</p>
+    <h2>🖥️ LabEase</h2>
+    <p>Computer Booking Lab System</p>
   </div>
   
   <ul class="sidebar-menu">
@@ -435,7 +440,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
         </div>
       </div>
 
-      <button type="submit" name="book">🎯 Book Computer</button>
+      <button type="submit" name="book">🎯 Book Lab</button>
     </form>
 
 

@@ -96,6 +96,7 @@ $existing_labs = $conn->query("
             background: #b8eaf8;
             padding: 20px;
         }
+        
         .header {
             background: linear-gradient(135deg, #172c45ff 0%,  #401c62ff 100%);
             color: white;

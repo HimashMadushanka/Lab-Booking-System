@@ -18,6 +18,7 @@ if (isset($_SESSION['success'])) {
 }
 
 $result = $conn->query("
+<<<<<<< HEAD
     SELECT b.*, u.name AS user_name, c.code AS computer_code, l.name as lab_name
     FROM bookings b
     JOIN users u ON b.user_id=u.id
@@ -30,6 +31,14 @@ $result = $conn->query("
             ELSE 3
         END,
         b.date DESC
+=======
+    SELECT b.*, u.name AS user_name, l.name AS lab_name
+    FROM bookings b
+    JOIN users u ON b.user_id=u.id
+    JOIN computers c ON b.computer_id=c.id
+    JOIN labs l ON c.lab_id=l.id
+    ORDER BY b.date DESC
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
 ");
 
 // Stats for dashboard
@@ -292,7 +301,10 @@ tr:hover {
                     <tr>
                         <th>ID</th>
                         <th>User</th>
+<<<<<<< HEAD
                         <th>Computer</th>
+=======
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
                         <th>Lab</th>
                         <th>Date</th>
                         <th>Time</th>
@@ -305,7 +317,10 @@ tr:hover {
                     <tr>
                         <td><?= $row['id'] ?></td>
                         <td><strong><?= htmlspecialchars($row['user_name']) ?></strong></td>
+<<<<<<< HEAD
                         <td><?= htmlspecialchars($row['computer_code']) ?></td>
+=======
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
                         <td><?= htmlspecialchars($row['lab_name']) ?></td>
                         <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                         <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>

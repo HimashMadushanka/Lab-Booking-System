@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin'])) {
 $total_users = $conn->query("SELECT COUNT(*) AS cnt FROM users")->fetch_assoc()['cnt'];
 $total_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings")->fetch_assoc()['cnt'];
 $pending = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
-$computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc()['cnt'];
+$total_labs = $conn->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()['cnt'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -83,8 +83,23 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
       padding: 10px 20px; 
       border-radius: 5px; 
       margin: 0 5px;
+      display: inline-block;
+      margin-bottom: 10px;
     }
 
+    .links a:hover {
+      background: #3498db;
+    }
+
+    .pdf-section {
+      text-align: center; 
+      margin: 40px auto; 
+      padding: 40px; 
+      background: white; 
+      border-radius: 10px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+      width: 300px;
+    }
   </style>
 </head>
 <body>
@@ -95,22 +110,23 @@ $computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers")->fetch_assoc(
 
 <div class="cards">
   <div class="card"><h2><?= $total_users ?></h2><p>Users</p></div>
-  <div class="card"><h2><?= $computers ?></h2><p>Labs</p></div>
+  <div class="card"><h2><?= $total_labs ?></h2><p>Labs</p></div>
   <div class="card"><h2><?= $total_bookings ?></h2><p>Total Bookings</p></div>
   <div class="card"><h2><?= $pending ?></h2><p>Pending Approvals</p></div>
 </div>
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
+<<<<<<< HEAD
   <a href="create_lab.php">Create New Lab</a>
+=======
+  <a href="manage_labs.php">Manage Labs</a>
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
   <a href="admin_feedback.php">View User Feedback</a>
-  <a href="analytics.php"> View Analytics</a>
-
-</div>
+  <a href="analytics.php">View Analytics</a>
 </div>
 
-<!-- Replace the PDF export section in dashboard.php -->
-<div style="text-align: center; margin: 40px auto ; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px;">
+<div class="pdf-section">
     <h3>📊 Export PDF Reports</h3>
     <p style="color: #7f8c8d; margin-bottom: 15px;">Generate detailed reports with custom date ranges</p>
     <a href="pdf_selector.php" style="background: #a759d1ff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">

@@ -381,7 +381,7 @@ table tbody tr:last-child td {
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <h2>🖥️ Lab Manager</h2>
+    <h2>🖥️ LabEase</h2>
     <p>Computer Lab System</p>
   </div>
   
@@ -455,7 +455,11 @@ table tbody tr:last-child td {
             <tr>
               <th>#</th>
               <th>Lab</th>
+<<<<<<< HEAD
              
+=======
+              <!-- <th>Computer</th> -->
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
@@ -467,7 +471,11 @@ table tbody tr:last-child td {
               <tr>
                 <td class="row-number"><?= $i++ ?></td>
                 <td class="lab-name"><?= htmlspecialchars($row['lab_name']) ?></td>
+<<<<<<< HEAD
                 
+=======
+                <!-- <td><span class="computer-code"><?= htmlspecialchars($row['computer_code']) ?></span></td> -->
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
                 <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['start_time'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['end_time'])) ?></td>

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback | Lab Management</title>
+    <title>Feedback | LabEase</title>
     <style>
         * {
             margin: 0;
@@ -339,8 +339,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Sidebar -->
 <div class="sidebar">
     <div class="sidebar-logo">
-        <h2>🖥️ Lab Manager</h2>
-        <p>Computer Lab System</p>
+        <h2>🖥️ LabEase</h2>
+        <p>Computer Lab Booking System</p>
     </div>
     
     <ul class="sidebar-menu">

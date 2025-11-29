@@ -143,6 +143,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #5a6fd8;
         }
         
+        .forgot-password {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
         .success-message {
             background: #d4edda;
             color: #155724;
@@ -342,12 +359,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (isset($_GET['registered'])): ?>
             <div class="success-message">Registration successful! Please login.</div>
         <?php endif; ?>
+<<<<<<< HEAD
         <?php if (isset($_SESSION['success'])): ?>
             <div class="success-message"><?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?></div>
+=======
+        <?php if (isset($_GET['reset'])): ?>
+            <div class="success-message">Password reset successful! Please login with your new password.</div>
+>>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
         <?php endif; ?>
         <form method="post">
             <input name="email" type="email" required placeholder="Email">
             <input name="password" type="password" required placeholder="Password">
+            <div class="forgot-password">
+                <a href="forgot_password.php">Forgot Password?</a>
+            </div>
             <button type="submit">Login</button>
             <?php if (!empty($error)) echo "<p style='color:red'>".htmlspecialchars($error)."</p>"; ?>
         </form>
