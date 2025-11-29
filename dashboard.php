@@ -1,64 +1,107 @@
 <?php
-// index.php - User Dashboard with Calendar
-require 'db.php';
-
-// Check if logged in and is user
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] != 'user'){
-    header("Location: login.php");
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['user_name'];
-
-// --- Fetch statistics ---
-$total_computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers WHERE status='available'")->fetch_assoc()['cnt'];
-$total_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id")->fetch_assoc()['cnt'];
-$approved_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id AND status='approved'")->fetch_assoc()['cnt'];
-
-// --- Fetch upcoming bookings ---
-$stmt = $conn->prepare("
-    SELECT b.*, c.code 
-    FROM bookings b 
-    JOIN computers c ON c.id=b.computer_id 
-    WHERE b.user_id=? AND b.date >= CURDATE() 
-    ORDER BY b.date, b.start_time LIMIT 5
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$upcoming = $stmt->get_result();
-
-// --- NEW: Fetch all bookings for calendar (current month and next 2 months) ---
-$calendar_bookings_query = "
-    SELECT b.date, b.start_time, b.end_time, b.status, c.code as computer_code
-    FROM bookings b
-    JOIN computers c ON c.id = b.computer_id
-    WHERE b.date >= DATE_FORMAT(NOW(), '%Y-%m-01')
-    AND b.date <= LAST_DAY(DATE_ADD(NOW(), INTERVAL 2 MONTH))
-    ORDER BY b.date, b.start_time
-";
-$calendar_bookings_result = $conn->query($calendar_bookings_query);
-$calendar_data = [];
-while($booking = $calendar_bookings_result->fetch_assoc()) {
-    $date = $booking['date'];
-    if(!isset($calendar_data[$date])) {
-        $calendar_data[$date] = [];
-    }
-    $calendar_data[$date][] = $booking;
+// Check if user role is correct
+if ($_SESSION['role'] != 'user') {
+    header('Location: unauthorized.php');
+    exit;
 }
 
-// --- NEW: Fetch labs for the Available Labs section ---
-$labs_query = "
-    SELECT l.*, 
-           COUNT(c.id) as total_computers,
-           SUM(CASE WHEN c.status = 'available' THEN 1 ELSE 0 END) as available_computers
-    FROM labs l 
-    LEFT JOIN computers c ON l.id = c.lab_id 
-    GROUP BY l.id 
-    ORDER BY available_computers DESC, l.name
-    LIMIT 4
-";
-$labs_result = $conn->query($labs_query);
+// Include database connection with error handling
+if (!file_exists('db.php')) {
+    die("Database configuration file not found.");
+}
+
+require 'db.php';
+
+// Check if connection was established
+if (!$conn) {
+    die("Database connection failed.");
+}
+
+$user_id = $_SESSION['user_id'];
+$user_name = $_SESSION['name'];
+
+// Initialize variables with default values
+$total_computers = 0;
+$total_bookings = 0;
+$approved_bookings = 0;
+$upcoming = null;
+$labs_result = null;
+$calendar_data = [];
+
+try {
+    // --- Fetch statistics ---
+    $result = $conn->query("SELECT COUNT(*) AS cnt FROM computers WHERE status='available'");
+    if ($result) {
+        $total_computers = $result->fetch_assoc()['cnt'];
+    }
+
+    $result = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id");
+    if ($result) {
+        $total_bookings = $result->fetch_assoc()['cnt'];
+    }
+
+    $result = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id AND status='approved'");
+    if ($result) {
+        $approved_bookings = $result->fetch_assoc()['cnt'];
+    }
+
+    // --- Fetch upcoming bookings ---
+    $stmt = $conn->prepare("
+        SELECT b.*, c.code 
+        FROM bookings b 
+        JOIN computers c ON c.id=b.computer_id 
+        WHERE b.user_id=? AND b.date >= CURDATE() 
+        ORDER BY b.date, b.start_time LIMIT 5
+    ");
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $upcoming = $stmt->get_result();
+    }
+
+    // --- Fetch all bookings for calendar (current month and next 2 months) ---
+    $calendar_bookings_query = "
+        SELECT b.date, b.start_time, b.end_time, b.status, c.code as computer_code
+        FROM bookings b
+        JOIN computers c ON c.id = b.computer_id
+        WHERE b.date >= DATE_FORMAT(NOW(), '%Y-%m-01')
+        AND b.date <= LAST_DAY(DATE_ADD(NOW(), INTERVAL 2 MONTH))
+        ORDER BY b.date, b.start_time
+    ";
+    $calendar_bookings_result = $conn->query($calendar_bookings_query);
+    if ($calendar_bookings_result) {
+        while($booking = $calendar_bookings_result->fetch_assoc()) {
+            $date = $booking['date'];
+            if(!isset($calendar_data[$date])) {
+                $calendar_data[$date] = [];
+            }
+            $calendar_data[$date][] = $booking;
+        }
+    }
+
+    // --- Fetch labs for the Available Labs section ---
+    $labs_query = "
+        SELECT l.*, 
+               COUNT(c.id) as total_computers,
+               SUM(CASE WHEN c.status = 'available' THEN 1 ELSE 0 END) as available_computers
+        FROM labs l 
+        LEFT JOIN computers c ON l.id = c.lab_id 
+        GROUP BY l.id 
+        ORDER BY available_computers DESC, l.name
+        LIMIT 4
+    ";
+    $labs_result = $conn->query($labs_query);
+
+} catch (Exception $e) {
+    error_log("Database error: " . $e->getMessage());
+    // Continue execution with default values
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -305,7 +348,7 @@ body {
   font-weight: 500;
 }
 
-/* NEW: Available Labs Section */
+/* Available Labs Section */
 .labs-section {
   background: white;
   border-radius: 12px;
@@ -490,7 +533,7 @@ body {
   opacity: 0.3;
 }
 
-/* NEW: Calendar Modal Styles */
+/* Calendar Modal Styles */
 .calendar-modal {
   display: none;
   position: fixed;
@@ -673,7 +716,7 @@ body {
   display: block;
 }
 
-/* NEW: Tooltip styles */
+/* Tooltip styles */
 .day-tooltip {
   display: none;
   position: absolute;
@@ -985,7 +1028,7 @@ table tbody tr:last-child td {
     </div>
   </div>
 
-  <!-- Stats Cards - ADDED CALENDAR CARD -->
+  <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon">📚</div>
@@ -1003,7 +1046,6 @@ table tbody tr:last-child td {
       </div>
     </div>
     
-    <!-- NEW CALENDAR CARD -->
     <div class="stat-card" onclick="openCalendar()" style="cursor: pointer;">
       <div class="stat-icon" title="Click to view calendar">📅</div>
       <div class="stat-info">
@@ -1013,7 +1055,7 @@ table tbody tr:last-child td {
     </div>
   </div>
 
-  <!-- NEW: Available Labs Section -->
+  <!-- Available Labs Section -->
   <div class="labs-section">
     <div class="section-header">
       <h2>🏢 Available Labs</h2>
@@ -1021,7 +1063,7 @@ table tbody tr:last-child td {
     </div>
     
     <div class="labs-grid">
-      <?php if ($labs_result->num_rows > 0): 
+      <?php if ($labs_result && $labs_result->num_rows > 0): 
           while($lab = $labs_result->fetch_assoc()): 
               $available_percentage = $lab['total_computers'] > 0 ? 
                   round(($lab['available_computers'] / $lab['total_computers']) * 100) : 0;
@@ -1039,7 +1081,6 @@ table tbody tr:last-child td {
               }
       ?>
       <div class="lab-card">
-        <!-- Lab Header -->
         <div class="lab-header">
           <div class="lab-title">
             <h3><?= htmlspecialchars($lab['name']) ?></h3>
@@ -1050,14 +1091,12 @@ table tbody tr:last-child td {
           </div>
         </div>
         
-        <!-- Capacity Info -->
         <div class="capacity-info">
           <div class="capacity-row">
             <span class="capacity-label">Total Capacity:</span>
             <span class="capacity-value"><?= $lab['capacity'] ?> computers</span>
           </div>
           
-          <!-- Availability Progress Bar -->
           <div style="margin-bottom: 8px;">
             <div class="capacity-row">
               <span class="capacity-label">Available Now:</span>
@@ -1069,7 +1108,6 @@ table tbody tr:last-child td {
           </div>
         </div>
         
-        <!-- Quick Stats -->
         <div class="stats-grid-mini">
           <div class="stat-mini">
             <div class="stat-mini-number" style="color: #3b82f6;"><?= $lab['available_computers'] ?></div>
@@ -1081,7 +1119,6 @@ table tbody tr:last-child td {
           </div>
         </div>
         
-        <!-- Quick Action Button -->
         <a href="create.php?lab=<?= $lab['id'] ?>" class="lab-action">
           🖥️ Book This Lab
         </a>
@@ -1091,7 +1128,7 @@ table tbody tr:last-child td {
       <div class="empty-labs">
         <div class="empty-labs-icon">🏢</div>
         <h3 style="color: #64748b; margin-bottom: 10px;">No Labs Available</h3>
-        <p>There are currently no labs configured in the system.</p>
+        <p>There are currently no labs configured in the system or database connection issue.</p>
       </div>
       <?php endif; ?>
     </div>
@@ -1105,7 +1142,7 @@ table tbody tr:last-child td {
     </div>
     
     <div class="table-wrapper">
-      <?php if($upcoming->num_rows > 0): ?>
+      <?php if($upcoming && $upcoming->num_rows > 0): ?>
         <table>
           <thead>
             <tr>
@@ -1144,7 +1181,7 @@ table tbody tr:last-child td {
 
 </div>
 
-<!-- NEW: Calendar Modal -->
+<!-- Calendar Modal -->
 <div class="calendar-modal" id="calendarModal">
   <div class="calendar-container">
     <div class="calendar-header">
@@ -1186,7 +1223,6 @@ table tbody tr:last-child td {
   </div>
 </div>
 
-<!-- NEW: Calendar JavaScript -->
 <script>
 // Calendar data from PHP
 const calendarData = <?= json_encode($calendar_data) ?>;

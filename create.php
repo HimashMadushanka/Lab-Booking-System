@@ -10,6 +10,13 @@ if (!isset($_SESSION['user_id'])) {
 // Fetch labs for dropdown
 $labs = $conn->query("SELECT * FROM labs ORDER BY id");
 
+$error = '';
+$success = '';
+$lab_id = '';
+$date = '';
+$start_time = '';
+$end_time = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     $lab_id = intval($_POST['lab_id'] ?? 0);
     $date = $conn->real_escape_string($_POST['date'] ?? '');
@@ -38,10 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
             $computers = [];
             while ($row = $result->fetch_assoc()) {
                 $computers[] = $row;
-<<<<<<< HEAD
             }
             
-            // Use first available computer (or you can modify to let user choose)
+            // Use first available computer
             $computer_id = $computers[0]['id'];
             $computer_code = $computers[0]['code'];
 
@@ -55,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
                     (? < end_time AND ? > start_time)
                 )
             ");
-            $check_approved->bind_param('issss', $computer_id, $date, $start_time, $end_time, $start_time, $end_time);
+            $check_approved->bind_param('isss', $computer_id, $date, $start_time, $end_time);
             $check_approved->execute();
             $approved_result = $check_approved->get_result();
 
@@ -64,55 +70,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
             } else {
                 // Insert booking as pending
                 $ins = $conn->prepare("
-                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status, approval_priority)
-                    VALUES (?, ?, ?, ?, ?, 'pending', 0)
+                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
+                    VALUES (?, ?, ?, ?, ?, 'pending')
                 ");
                 $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
 
                 if ($ins->execute()) {
                     $success = "✅ Booking requested successfully for computer: <b>$computer_code</b>. Waiting for admin approval.";
-                } else {
-                    $error = "⚠️ Failed to create booking. Try again.";
-                }
-=======
->>>>>>> 58a9f1a99cd4aea71767176fa345b7fcf6a79af6
-            }
-            
-            // Use first available computer (or you can modify to let user choose)
-            $computer_id = $computers[0]['id'];
-            $computer_code = $computers[0]['code'];
-
-            // Check if this time slot already has an approved booking
-            $check_approved = $conn->prepare("
-                SELECT id FROM bookings 
-                WHERE computer_id = ? 
-                AND date = ? 
-                AND status = 'approved'
-                AND (
-                    (? < end_time AND ? > start_time)
-                )
-            ");
-            $check_approved->bind_param('issss', $computer_id, $date, $start_time, $end_time, $start_time, $end_time);
-            $check_approved->execute();
-            $approved_result = $check_approved->get_result();
-
-            if ($approved_result->num_rows > 0) {
-                $error = "❌ This time slot already has an approved booking. Please choose a different time or computer.";
-            } else {
-                // Insert booking as pending
-                $ins = $conn->prepare("
-                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status, approval_priority)
-                    VALUES (?, ?, ?, ?, ?, 'pending', 0)
-                ");
-                $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
-
-                if ($ins->execute()) {
-                    $success = "✅ Booking requested successfully for computer: <b>$computer_code</b>. Waiting for admin approval.";
+                    // Clear form fields
+                    $lab_id = '';
+                    $date = '';
+                    $start_time = '';
+                    $end_time = '';
                 } else {
                     $error = "⚠️ Failed to create booking. Try again.";
                 }
             }
-            
         }
     }
 }
@@ -123,17 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-  <title>Book a Computer | Lab Management</title>
-  <!-- Keep your existing CSS styles -->
-<<<<<<< HEAD
-=======
-=======
   <title>Book a Computer | LabEase</title>
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
->>>>>>> 58a9f1a99cd4aea71767176fa345b7fcf6a79af6
   <style>
-    /* Your existing CSS styles here */
     * {
       margin: 0;
       padding: 0;
@@ -424,7 +388,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
-    <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
+    <li><a href="feedback.php"><span>💬</span>Give Feedback</a></li>
   </ul>
   
   <div class="logout-btn">
@@ -458,7 +422,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
           mysqli_data_seek($labs, 0);
           while($lab = $labs->fetch_assoc()):
             $selected = ($lab_id == $lab['id']) ? 'selected' : '';
-            echo "<option value='{$lab['id']}' $selected>{$lab['name']}</option>";
+            echo "<option value='{$lab['id']}' $selected>{$lab['name']} - {$lab['location']}</option>";
           endwhile;
           ?>
         </select>
@@ -484,14 +448,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
       <button type="submit" name="book">🎯 Book Lab</button>
     </form>
 
-
-
     <div class="back-link">
       <a href="index.php">← Back to Dashboard</a>
     </div>
 
   </div>
 </div>
+
+<script>
+// Add some client-side validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const dateInput = document.getElementById('date');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    
+    form.addEventListener('submit', function(e) {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (startTime && endTime && startTime >= endTime) {
+            e.preventDefault();
+            alert('❌ End time must be after start time.');
+            endTimeInput.focus();
+        }
+    });
+    
+    // Real-time validation for time inputs
+    startTimeInput.addEventListener('change', validateTimes);
+    endTimeInput.addEventListener('change', validateTimes);
+    
+    function validateTimes() {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (startTime && endTime && startTime >= endTime) {
+            endTimeInput.style.borderColor = '#dc2626';
+            startTimeInput.style.borderColor = '#dc2626';
+        } else {
+            endTimeInput.style.borderColor = '#e2e8f0';
+            startTimeInput.style.borderColor = '#e2e8f0';
+        }
+    }
+});
+</script>
 
 </body>
 </html>

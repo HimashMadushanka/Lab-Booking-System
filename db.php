@@ -1,22 +1,23 @@
 <?php
-// db.php
+// db.php - Database Connection
+$host = 'localhost';
+$username = 'root'; // Your MySQL username
+$password = ''; // Your MySQL password
+$database = 'lab_mgmt'; // Your database name
 
-// Start session only if it hasn't been started already
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Set charset to utf8
+$conn->set_charset("utf8mb4");
+
+// Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-
-$host = 'localhost';
-$db   = 'lab_mgmt';
-$user = 'root';
-$pass = ''; // XAMPP default
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die("DB Connection failed: " . $conn->connect_error);
-}
-
-// helper: use prepared statements everywhere
-function esc($s) {
-    return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
-}
+?>
