@@ -117,11 +117,7 @@ $total_labs = $conn->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()['c
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
-<<<<<<< HEAD
   <a href="create_lab.php">Create New Lab</a>
-=======
-  <a href="manage_labs.php">Manage Labs</a>
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
   <a href="admin_feedback.php">View User Feedback</a>
   <a href="analytics.php">View Analytics</a>
 </div>

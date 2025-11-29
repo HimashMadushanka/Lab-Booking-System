@@ -17,8 +17,8 @@ if (isset($_SESSION['success'])) {
     unset($_SESSION['success']);
 }
 
+// Fixed SQL query without merge conflicts
 $result = $conn->query("
-<<<<<<< HEAD
     SELECT b.*, u.name AS user_name, c.code AS computer_code, l.name as lab_name
     FROM bookings b
     JOIN users u ON b.user_id=u.id
@@ -31,14 +31,6 @@ $result = $conn->query("
             ELSE 3
         END,
         b.date DESC
-=======
-    SELECT b.*, u.name AS user_name, l.name AS lab_name
-    FROM bookings b
-    JOIN users u ON b.user_id=u.id
-    JOIN computers c ON b.computer_id=c.id
-    JOIN labs l ON c.lab_id=l.id
-    ORDER BY b.date DESC
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
 ");
 
 // Stats for dashboard
@@ -270,25 +262,25 @@ tr:hover {
 
     <!-- Status Messages -->
     <?php if (isset($error_message)): ?>
-        <div class="alert alert-error">❌ <?= $error_message ?></div>
+        <div class="alert alert-error">❌ <?= htmlspecialchars($error_message) ?></div>
     <?php endif; ?>
 
     <?php if (isset($success_message)): ?>
-        <div class="alert alert-success">✅ <?= $success_message ?></div>
+        <div class="alert alert-success">✅ <?= htmlspecialchars($success_message) ?></div>
     <?php endif; ?>
 
     <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3><?= $total_bookings ?></h3>
+            <h3><?= htmlspecialchars($total_bookings) ?></h3>
             <p>Total Bookings</p>
         </div>
         <div class="stat-card">
-            <h3><?= $pending_bookings ?></h3>
+            <h3><?= htmlspecialchars($pending_bookings) ?></h3>
             <p>Pending Bookings</p>
         </div>
         <div class="stat-card">
-            <h3><?= $approved_bookings ?></h3>
+            <h3><?= htmlspecialchars($approved_bookings) ?></h3>
             <p>Approved Bookings</p>
         </div>
     </div>
@@ -301,10 +293,7 @@ tr:hover {
                     <tr>
                         <th>ID</th>
                         <th>User</th>
-<<<<<<< HEAD
-                        <th>Computer</th>
-=======
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
+                      
                         <th>Lab</th>
                         <th>Date</th>
                         <th>Time</th>
@@ -315,18 +304,15 @@ tr:hover {
                 <tbody>
                     <?php while($row = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?= $row['id'] ?></td>
+                        <td><?= htmlspecialchars($row['id']) ?></td>
                         <td><strong><?= htmlspecialchars($row['user_name']) ?></strong></td>
-<<<<<<< HEAD
-                        <td><?= htmlspecialchars($row['computer_code']) ?></td>
-=======
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
+                        
                         <td><?= htmlspecialchars($row['lab_name']) ?></td>
                         <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
-                        <td><?= $row['start_time'].' - '.$row['end_time'] ?></td>
+                        <td><?= htmlspecialchars($row['start_time']) . ' - ' . htmlspecialchars($row['end_time']) ?></td>
                         <td>
-                            <span class="status-badge status-<?= $row['status'] ?>">
-                                <?= ucfirst($row['status']) ?>
+                            <span class="status-badge status-<?= htmlspecialchars($row['status']) ?>">
+                                <?= ucfirst(htmlspecialchars($row['status'])) ?>
                             </span>
                         </td>
                         <td>
@@ -356,7 +342,6 @@ tr:hover {
     </div>
 
     
-
     <div class="navigation">
         <a href="dashboard.php" class="nav-btn">← Back to Dashboard</a>
     </div>

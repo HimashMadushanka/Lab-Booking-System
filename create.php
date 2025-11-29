@@ -38,6 +38,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
             $computers = [];
             while ($row = $result->fetch_assoc()) {
                 $computers[] = $row;
+<<<<<<< HEAD
+            }
+            
+            // Use first available computer (or you can modify to let user choose)
+            $computer_id = $computers[0]['id'];
+            $computer_code = $computers[0]['code'];
+
+            // Check if this time slot already has an approved booking
+            $check_approved = $conn->prepare("
+                SELECT id FROM bookings 
+                WHERE computer_id = ? 
+                AND date = ? 
+                AND status = 'approved'
+                AND (
+                    (? < end_time AND ? > start_time)
+                )
+            ");
+            $check_approved->bind_param('issss', $computer_id, $date, $start_time, $end_time, $start_time, $end_time);
+            $check_approved->execute();
+            $approved_result = $check_approved->get_result();
+
+            if ($approved_result->num_rows > 0) {
+                $error = "❌ This time slot already has an approved booking. Please choose a different time or computer.";
+            } else {
+                // Insert booking as pending
+                $ins = $conn->prepare("
+                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status, approval_priority)
+                    VALUES (?, ?, ?, ?, ?, 'pending', 0)
+                ");
+                $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
+
+                if ($ins->execute()) {
+                    $success = "✅ Booking requested successfully for computer: <b>$computer_code</b>. Waiting for admin approval.";
+                } else {
+                    $error = "⚠️ Failed to create booking. Try again.";
+                }
+=======
+>>>>>>> 58a9f1a99cd4aea71767176fa345b7fcf6a79af6
             }
             
             // Use first available computer (or you can modify to let user choose)
@@ -88,9 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 <<<<<<< HEAD
   <title>Book a Computer | Lab Management</title>
   <!-- Keep your existing CSS styles -->
+<<<<<<< HEAD
+=======
 =======
   <title>Book a Computer | LabEase</title>
 >>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
+>>>>>>> 58a9f1a99cd4aea71767176fa345b7fcf6a79af6
   <style>
     /* Your existing CSS styles here */
     * {
