@@ -387,9 +387,8 @@ table tbody tr:last-child td {
   
   <ul class="sidebar-menu">
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
-     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
-    <li><a href="my_bookings.php" class="active"><span>📋</span> My Bookings</a></li>
+    <li><a href="mybookings.php" class="active"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
@@ -455,7 +454,7 @@ table tbody tr:last-child td {
             <tr>
               <th>#</th>
               <th>Lab</th>
-             
+              <th>Computer</th>
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
@@ -467,7 +466,7 @@ table tbody tr:last-child td {
               <tr>
                 <td class="row-number"><?= $i++ ?></td>
                 <td class="lab-name"><?= htmlspecialchars($row['lab_name']) ?></td>
-                
+                <td><span class="computer-code"><?= htmlspecialchars($row['computer_code']) ?></span></td>
                 <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['start_time'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['end_time'])) ?></td>

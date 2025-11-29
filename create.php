@@ -363,8 +363,9 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
   
   <ul class="sidebar-menu">
     <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
-    <li><a href="mybookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
   </ul>
   
@@ -378,7 +379,7 @@ $find->bind_param('issss', $lab_id, $date, $start_time, $end_time, $lab_id);
   <div class="booking-container">
     
     <div class="page-header">
-      <h2>📅 Book a Computer</h2>
+      <h2>📅 Book a Lab</h2>
       <p>Select your preferred lab and time slot</p>
     </div>
 
