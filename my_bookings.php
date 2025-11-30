@@ -27,7 +27,7 @@ WHERE b.user_id = ?
 ORDER BY b.date DESC, b.start_time DESC
 ";
 
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -386,11 +386,12 @@ table tbody tr:last-child td {
   </div>
   
   <ul class="sidebar-menu">
-    <li><a href="index.php"><span>📊</span> Dashboard</a></li>
-     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
+    <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php" class="active"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
+    <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
   <div class="logout-btn">
@@ -455,11 +456,6 @@ table tbody tr:last-child td {
             <tr>
               <th>#</th>
               <th>Lab</th>
-<<<<<<< HEAD
-             
-=======
-              <!-- <th>Computer</th> -->
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
@@ -471,11 +467,6 @@ table tbody tr:last-child td {
               <tr>
                 <td class="row-number"><?= $i++ ?></td>
                 <td class="lab-name"><?= htmlspecialchars($row['lab_name']) ?></td>
-<<<<<<< HEAD
-                
-=======
-                <!-- <td><span class="computer-code"><?= htmlspecialchars($row['computer_code']) ?></span></td> -->
->>>>>>> dd1ddc649ab1ee685d9b277be09b9fce921ebdb7
                 <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['start_time'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['end_time'])) ?></td>

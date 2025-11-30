@@ -12,7 +12,6 @@ $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['name'];
 
 // Initialize variables
-$total_computers = 0;
 $total_bookings = 0;
 $approved_bookings = 0;
 $upcoming = null;
@@ -21,11 +20,6 @@ $calendar_data = [];
 
 try {
     // Fetch statistics
-    $result = $mysqli->query("SELECT COUNT(*) AS cnt FROM computers WHERE status='available'");
-    if ($result) {
-        $total_computers = $result->fetch_assoc()['cnt'];
-    }
-
     $result = $mysqli->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id");
     if ($result) {
         $total_bookings = $result->fetch_assoc()['cnt'];
@@ -427,8 +421,10 @@ table th, table td {
   
   <ul class="sidebar-menu">
     <li><a href="dashboard.php" class="active">📊 Dashboard</a></li>
+    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php">➕ Book a Lab</a></li>
     <li><a href="my_bookings.php">📋 My Bookings</a></li>
+    <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
 </div>

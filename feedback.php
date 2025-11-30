@@ -344,11 +344,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
     <ul class="sidebar-menu">
-        <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+        <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
         <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
         <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
         <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
         <li><a href="feedback.php" class="active"><span>💬</span> Give Feedback</a></li>
+        <li><a href="logout.php">🚪 Logout</a></li>
     </ul>
     
     <div class="logout-btn">

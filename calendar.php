@@ -1,21 +1,21 @@
 <?php
 // calendar.php - Enhanced Calendar View for All Bookings
+session_start();
 require 'db.php';
 
-// Check if logged in and is user
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] != 'user'){
+// Check if logged in
+if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
     exit;
 }
 
-
 $user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['user_name'];
+$user_name = $_SESSION['name'] ?? 'User'; // Fixed undefined user_name
 
 // --- Fetch statistics ---
-$total_computers = $conn->query("SELECT COUNT(*) AS cnt FROM computers WHERE status='available'")->fetch_assoc()['cnt'];
-$total_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id")->fetch_assoc()['cnt'];
-$approved_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id AND status='approved'")->fetch_assoc()['cnt'];
+$total_computers = $mysqli->query("SELECT COUNT(*) AS cnt FROM computers WHERE status='available'")->fetch_assoc()['cnt'];
+$total_bookings = $mysqli->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id")->fetch_assoc()['cnt'];
+$approved_bookings = $mysqli->query("SELECT COUNT(*) AS cnt FROM bookings WHERE user_id=$user_id AND status='approved'")->fetch_assoc()['cnt'];
 
 // Get selected date or default to today
 $selected_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
@@ -50,7 +50,7 @@ $next_month = clone $current_view_date;
 $next_month->modify('+1 month');
 
 // Get bookings for the selected date
-$stmt = $conn->prepare("
+$stmt = $mysqli->prepare("
     SELECT b.*, l.name as lab_name, c.code as computer_code, u.name as user_name 
     FROM bookings b 
     JOIN computers c ON c.id = b.computer_id 
@@ -65,7 +65,7 @@ $bookings = $stmt->get_result();
 
 // Get bookings count for each day in current month for calendar
 $current_month = date('Y-m', strtotime($selected_date));
-$bookings_count_stmt = $conn->prepare("
+$bookings_count_stmt = $mysqli->prepare("
     SELECT date, COUNT(*) as booking_count,
            SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved_count,
            SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending_count,
@@ -84,7 +84,7 @@ while($row = $bookings_count_result->fetch_assoc()) {
 }
 
 // Get detailed bookings for calendar
-$month_bookings_stmt = $conn->prepare("
+$month_bookings_stmt = $mysqli->prepare("
     SELECT b.date, b.start_time, b.end_time, b.status, 
            l.name as lab_name, 
            c.code as computer_code,
@@ -1038,7 +1038,7 @@ table tbody tr:last-child td {
   </div>
   
   <ul class="sidebar-menu">
-    <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
     <li><a href="calendar.php" class="active"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
@@ -1056,6 +1056,15 @@ table tbody tr:last-child td {
   <!-- Top Bar -->
   <div class="top-bar">
     <h1>📅 Calendar View</h1>
+    <div class="user-info">
+      <div class="user-avatar">
+        <?= strtoupper(substr($user_name, 0, 1)) ?>
+      </div>
+      <div class="user-details">
+        <h3><?= htmlspecialchars($user_name) ?></h3>
+        <p>Student</p>
+      </div>
+    </div>
   </div>
 
   <!-- Stats Cards -->

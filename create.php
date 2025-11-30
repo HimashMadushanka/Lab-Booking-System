@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Fetch labs for dropdown
-$labs = $conn->query("SELECT * FROM labs ORDER BY id");
+$labs = $mysqli->query("SELECT * FROM labs ORDER BY id");
 
 $error = '';
 $success = '';
@@ -19,9 +19,9 @@ $end_time = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     $lab_id = intval($_POST['lab_id'] ?? 0);
-    $date = $conn->real_escape_string($_POST['date'] ?? '');
-    $start_time = $conn->real_escape_string($_POST['start_time'] ?? '');
-    $end_time = $conn->real_escape_string($_POST['end_time'] ?? '');
+    $date = $mysqli->real_escape_string($_POST['date'] ?? '');
+    $start_time = $mysqli->real_escape_string($_POST['start_time'] ?? '');
+    $end_time = $mysqli->real_escape_string($_POST['end_time'] ?? '');
 
     // Validation
     if (!$lab_id || !$date || !$start_time || !$end_time) {
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
         $error = "❌ End time must be after start time.";
     } else {
         // Find available computers in the selected lab
-        $find = $conn->prepare("
+        $find = $mysqli->prepare("
             SELECT id, code FROM computers 
             WHERE lab_id = ? AND status = 'available'
         ");
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
             $computer_code = $computers[0]['code'];
 
             // Check if this time slot already has an approved booking
-            $check_approved = $conn->prepare("
+            $check_approved = $mysqli->prepare("
                 SELECT id FROM bookings 
                 WHERE computer_id = ? 
                 AND date = ? 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
                 $error = "❌ This time slot already has an approved booking. Please choose a different time or computer.";
             } else {
                 // Insert booking as pending
-                $ins = $conn->prepare("
+                $ins = $mysqli->prepare("
                     INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
                     VALUES (?, ?, ?, ?, ?, 'pending')
                 ");
@@ -384,11 +384,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
   </div>
   
   <ul class="sidebar-menu">
-    <li><a href="index.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
-    <li><a href="feedback.php"><span>💬</span>Give Feedback</a></li>
+    <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+    <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
   <div class="logout-btn">
@@ -449,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     </form>
 
     <div class="back-link">
-      <a href="index.php">← Back to Dashboard</a>
+      <a href="dashboard.php">← Back to Dashboard</a>
     </div>
 
   </div>
