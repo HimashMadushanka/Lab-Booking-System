@@ -29,65 +29,137 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     } elseif (strtotime($end_time) <= strtotime($start_time)) {
         $error = "❌ End time must be after start time.";
     } else {
-        // Find available computers in the selected lab
-        $find = $mysqli->prepare("
-            SELECT id, code FROM computers 
-            WHERE lab_id = ? AND status = 'available'
-        ");
-        $find->bind_param('i', $lab_id);
-        $find->execute();
-        $result = $find->get_result();
+        // Get lab details first
+        $lab_stmt = $mysqli->prepare("SELECT name, location FROM labs WHERE id = ?");
+        $lab_stmt->bind_param('i', $lab_id);
+        $lab_stmt->execute();
+        $lab_result = $lab_stmt->get_result();
+        $lab = $lab_result->fetch_assoc();
+        $lab_stmt->close();
 
-        if ($result->num_rows == 0) {
-            $error = "❌ No computers available in this lab.";
+        if (!$lab) {
+            $error = "❌ Selected lab not found.";
         } else {
-            // Let user choose a computer or assign first available
-            $computers = [];
-            while ($row = $result->fetch_assoc()) {
-                $computers[] = $row;
-            }
-            
-            // Use first available computer
-            $computer_id = $computers[0]['id'];
-            $computer_code = $computers[0]['code'];
+            $lab_name = $lab['name'];
+            $lab_location = $lab['location'];
 
-            // Check if this time slot already has an approved booking
-            $check_approved = $mysqli->prepare("
-                SELECT id FROM bookings 
-                WHERE computer_id = ? 
-                AND date = ? 
-                AND status = 'approved'
-                AND (
-                    (? < end_time AND ? > start_time)
-                )
+            // Find available computers in the selected lab
+            $find = $mysqli->prepare("
+                SELECT id, code FROM computers 
+                WHERE lab_id = ? AND status = 'available'
             ");
-            $check_approved->bind_param('isss', $computer_id, $date, $start_time, $end_time);
-            $check_approved->execute();
-            $approved_result = $check_approved->get_result();
+            $find->bind_param('i', $lab_id);
+            $find->execute();
+            $result = $find->get_result();
 
-            if ($approved_result->num_rows > 0) {
-                $error = "❌ This time slot already has an approved booking. Please choose a different time or computer.";
+            if ($result->num_rows == 0) {
+                $error = "❌ No computers available in this lab.";
             } else {
-                // Insert booking as pending
-                $ins = $mysqli->prepare("
-                    INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
-                    VALUES (?, ?, ?, ?, ?, 'pending')
-                ");
-                $ins->bind_param('iisss', $_SESSION['user_id'], $computer_id, $date, $start_time, $end_time);
+                $computers = [];
+                while ($row = $result->fetch_assoc()) {
+                    $computers[] = $row;
+                }
+                
+                // Try to find a computer without any conflicting bookings (approved or pending)
+                $available_computer = null;
+                $available_computer_code = null;
+                
+                foreach ($computers as $computer) {
+                    $computer_id = $computer['id'];
+                    $computer_code = $computer['code'];
+                    
+                    // Check for any conflicting bookings (both approved AND pending)
+                    $check_conflicts = $mysqli->prepare("
+                        SELECT id FROM bookings 
+                        WHERE computer_id = ? 
+                        AND date = ? 
+                        AND status IN ('approved', 'pending')
+                        AND (
+                            (start_time < ? AND end_time > ?) OR
+                            (start_time < ? AND end_time > ?) OR
+                            (start_time >= ? AND end_time <= ?)
+                        )
+                    ");
+                    $check_conflicts->bind_param('isssssss', 
+                        $computer_id, $date, 
+                        $end_time, $start_time,
+                        $start_time, $end_time,
+                        $start_time, $end_time
+                    );
+                    $check_conflicts->execute();
+                    $conflict_result = $check_conflicts->get_result();
+                    
+                    if ($conflict_result->num_rows == 0) {
+                        $available_computer = $computer_id;
+                        $available_computer_code = $computer_code;
+                        break; // Found an available computer
+                    }
+                    $check_conflicts->close();
+                }
 
-                if ($ins->execute()) {
-                    $success = "✅ Booking requested successfully for computer: <b>$computer_code</b>. Waiting for admin approval.";
-                    // Clear form fields
-                    $lab_id = '';
-                    $date = '';
-                    $start_time = '';
-                    $end_time = '';
+                if (!$available_computer) {
+                    $error = "❌ No available time slots for this lab. All computers have pending or approved bookings during this time.";
                 } else {
-                    $error = "⚠️ Failed to create booking. Try again.";
+                    // Check if user already has a pending booking for the same lab and time
+                    $check_user_booking = $mysqli->prepare("
+                        SELECT b.id 
+                        FROM bookings b 
+                        JOIN computers c ON b.computer_id = c.id 
+                        WHERE b.user_id = ? 
+                        AND c.lab_id = ?
+                        AND b.date = ? 
+                        AND b.status = 'pending'
+                        AND (
+                            (b.start_time < ? AND b.end_time > ?) OR
+                            (b.start_time < ? AND b.end_time > ?)
+                        )
+                    ");
+                    $check_user_booking->bind_param('iisssss', 
+                        $_SESSION['user_id'], $lab_id, $date,
+                        $end_time, $start_time,
+                        $start_time, $end_time
+                    );
+                    $check_user_booking->execute();
+                    $user_booking_result = $check_user_booking->get_result();
+                    
+                    if ($user_booking_result->num_rows > 0) {
+                        $error = "❌ You already have a pending booking for this lab during this time slot.";
+                    } else {
+                        // Insert booking as pending
+                        $ins = $mysqli->prepare("
+                            INSERT INTO bookings (user_id, computer_id, date, start_time, end_time, status)
+                            VALUES (?, ?, ?, ?, ?, 'pending')
+                        ");
+                        $ins->bind_param('iisss', $_SESSION['user_id'], $available_computer, $date, $start_time, $end_time);
+
+                        if ($ins->execute()) {
+                            $success = "✅ Booking requested successfully for <b>$lab_name</b> ($lab_location). Waiting for admin approval.";
+                            // Clear form fields
+                            $lab_id = '';
+                            $date = '';
+                            $start_time = '';
+                            $end_time = '';
+                        } else {
+                            $error = "⚠️ Failed to create booking. Try again.";
+                        }
+                        $ins->close();
+                    }
+                    $check_user_booking->close();
                 }
             }
         }
     }
+}
+
+// Get pending bookings count for notification
+$pending_count = 0;
+if ($_SESSION['role'] === 'admin') {
+    $pending_stmt = $mysqli->prepare("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'");
+    $pending_stmt->execute();
+    $pending_result = $pending_stmt->get_result();
+    $pending_data = $pending_result->fetch_assoc();
+    $pending_count = $pending_data['count'];
+    $pending_stmt->close();
 }
 ?>
 
@@ -145,6 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 
     .sidebar-menu li {
       margin-bottom: 5px;
+      position: relative;
     }
 
     .sidebar-menu a {
@@ -172,6 +245,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     .sidebar-menu a span {
       margin-right: 12px;
       font-size: 18px;
+    }
+
+    .pending-badge {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
     }
 
     .logout-btn {
@@ -253,6 +343,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
       background: #d1fae5;
       color: #065f46;
       border: 1px solid #a7f3d0;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
     }
 
     form {
@@ -345,6 +441,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
       color: #3b82f6;
     }
 
+    .info-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .info-box h4 {
+      color: #0369a1;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-box ul {
+      margin-left: 20px;
+      color: #475569;
+    }
+
+    .info-box li {
+      margin-bottom: 5px;
+    }
+
     @media (max-width: 1024px) {
       .sidebar {
         transform: translateX(-100%);
@@ -380,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
 <div class="sidebar">
   <div class="sidebar-logo">
     <h2>🖥️ LabEase</h2>
-    <p>Computer Booking Lab System</p>
+    <p>Computer Lab Booking System</p>
   </div>
   
   <ul class="sidebar-menu">
@@ -388,6 +509,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+    <?php if ($_SESSION['role'] === 'admin'): ?>
+    <li>
+      <a href="admin_pending.php">
+        <span>👨‍💼</span> Pending Approvals
+        <?php if ($pending_count > 0): ?>
+          <span class="pending-badge"><?= $pending_count ?></span>
+        <?php endif; ?>
+      </a>
+    </li>
+    <?php endif; ?>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
@@ -404,6 +535,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     <div class="page-header">
       <h2>📅 Book a Lab</h2>
       <p>Select your preferred lab and time slot</p>
+    </div>
+
+    <div class="info-box">
+      <h4>ℹ️ Booking Rules</h4>
+      <ul>
+        <li>Only one booking per time slot can be approved</li>
+        <li>Pending bookings block the time slot</li>
+        <li>You cannot book overlapping time slots</li>
+        <li>Admin will approve the most suitable booking</li>
+      </ul>
     </div>
 
     <?php if (!empty($error)): ?>

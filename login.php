@@ -84,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="register-link">
             <p>No account? <a href="register.php">Register here</a></p>
+            <p><a href="forgot_password.php">Forgot your password?</a></p>
         </div>
     </div>
 </body>

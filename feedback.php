@@ -12,12 +12,13 @@ $success = "";
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $subject = trim($_POST['subject']);
-    $message = trim($_POST['message']);
-    $rating = intval($_POST['rating']);
+    $subject = trim($_POST['subject'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+    $rating = intval($_POST['rating'] ?? 5);
 
     if ($subject && $message && $rating) {
-        $stmt = $conn->prepare("INSERT INTO feedback (user_id, subject, message, rating) VALUES (?, ?, ?, ?)");
+        // Use $mysqli instead of $conn
+        $stmt = $mysqli->prepare("INSERT INTO feedback (user_id, subject, message, rating) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("issi", $user_id, $subject, $message, $rating);
         
         if ($stmt->execute()) {
@@ -25,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = "❌ Failed to submit feedback. Please try again.";
         }
+        $stmt->close();
     } else {
         $error = "⚠️ Please fill all fields and provide a rating.";
     }
@@ -159,9 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .page-header {
             margin-bottom: 30px;
             text-align: center;
-            background-color: #95bcebff;
+            background-color: #95bceb;
             border: 2px solid black;
             border-radius: 10px;
+            padding: 20px;
         }
 
         .page-header h2 {
@@ -172,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .page-header p {
-            color: #11181eff;
+            color: #11181e;
             font-size: 15px;
         }
 
@@ -377,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="post">
             <div class="form-group">
                 <label for="subject">📋 Subject</label>
-                <input type="text" name="subject" id="subject" placeholder="Brief description of your feedback" required>
+                <input type="text" name="subject" id="subject" placeholder="Brief description of your feedback" required value="<?= isset($_POST['subject']) ? htmlspecialchars($_POST['subject']) : '' ?>">
             </div>
 
             <div class="form-group rating-group">
@@ -398,14 +401,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="message">📝 Your Message</label>
-                <textarea name="message" id="message" placeholder="Please share your detailed feedback, suggestions, or issues..." required></textarea>
+                <textarea name="message" id="message" placeholder="Please share your detailed feedback, suggestions, or issues..." required><?= isset($_POST['message']) ? htmlspecialchars($_POST['message']) : '' ?></textarea>
             </div>
 
             <button type="submit">📤 Submit Feedback</button>
         </form>
 
         <div class="back-link">
-            <a href="index.php">← Back to Dashboard</a>
+            <a href="dashboard.php">← Back to Dashboard</a>
         </div>
 
     </div>
@@ -416,50 +419,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const stars = document.querySelectorAll('.star');
     const ratingInput = document.getElementById('rating');
     
+    // Initialize with default rating
+    let currentRating = 5;
+    
+    function updateStars(rating) {
+        stars.forEach(star => {
+            const value = parseInt(star.getAttribute('data-value'));
+            if (value <= rating) {
+                star.classList.add('active');
+                star.style.color = '#fbbf24';
+            } else {
+                star.classList.remove('active');
+                star.style.color = '#e2e8f0';
+            }
+        });
+    }
+    
     stars.forEach(star => {
         star.addEventListener('click', function() {
-            const value = this.getAttribute('data-value');
-            ratingInput.value = value;
-            
-            // Update star appearance
-            stars.forEach(s => {
-                if (s.getAttribute('data-value') <= value) {
-                    s.classList.add('active');
-                } else {
-                    s.classList.remove('active');
-                }
-            });
+            currentRating = parseInt(this.getAttribute('data-value'));
+            ratingInput.value = currentRating;
+            updateStars(currentRating);
         });
         
         star.addEventListener('mouseover', function() {
-            const value = this.getAttribute('data-value');
-            stars.forEach(s => {
-                if (s.getAttribute('data-value') <= value) {
-                    s.style.color = '#fbbf24';
-                } else {
-                    s.style.color = '#e2e8f0';
-                }
-            });
+            const hoverRating = parseInt(this.getAttribute('data-value'));
+            updateStars(hoverRating);
         });
         
         star.addEventListener('mouseout', function() {
-            stars.forEach(s => {
-                const value = s.getAttribute('data-value');
-                if (value <= ratingInput.value) {
-                    s.style.color = '#fbbf24';
-                } else {
-                    s.style.color = '#e2e8f0';
-                }
-            });
+            updateStars(currentRating);
         });
     });
 
     // Initialize with 5 stars
-    stars.forEach(star => {
-        if (star.getAttribute('data-value') <= 5) {
-            star.classList.add('active');
-        }
-    });
+    updateStars(currentRating);
 </script>
 
 </body>

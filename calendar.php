@@ -150,24 +150,23 @@ body {
   z-index: 100;
 }
 
-.sidebar-logo {
-  padding: 0 25px 30px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  margin-bottom: 30px;
-}
+    .sidebar-logo {
+      padding: 0 25px 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 30px;
+    }
 
-.sidebar-logo h2 {
-  color: white;
-  font-size: 22px;
-  font-weight: 700;
-}
+    .sidebar-logo h2 {
+      color: white;
+      font-size: 22px;
+      font-weight: 700;
+    }
 
-.sidebar-logo p {
-  color: #94a3b8;
-  font-size: 13px;
-  margin-top: 5px;
-  text-align: center;
-}
+    .sidebar-logo p {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 5px;
+    }
 
 .sidebar-menu {
   list-style: none;
@@ -1043,6 +1042,7 @@ table tbody tr:last-child td {
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+       <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
   <div class="logout-btn">
@@ -1057,13 +1057,7 @@ table tbody tr:last-child td {
   <div class="top-bar">
     <h1>📅 Calendar View</h1>
     <div class="user-info">
-      <div class="user-avatar">
-        <?= strtoupper(substr($user_name, 0, 1)) ?>
-      </div>
-      <div class="user-details">
-        <h3><?= htmlspecialchars($user_name) ?></h3>
-        <p>Student</p>
-      </div>
+
     </div>
   </div>
 

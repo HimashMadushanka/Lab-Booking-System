@@ -425,8 +425,12 @@ table th, table td {
     <li><a href="create.php">➕ Book a Lab</a></li>
     <li><a href="my_bookings.php">📋 My Bookings</a></li>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
+    <div class="logout-btn">
+    <a href="logout.php">Logout</a>
+  </div>
 </div>
 
 <!-- Main Content -->
@@ -543,7 +547,7 @@ table th, table td {
           <thead>
             <tr>
               <th>Lab</th>
-              <th>Computer</th>
+              
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
@@ -553,7 +557,7 @@ table th, table td {
             <?php while($b = $upcoming->fetch_assoc()): ?>
             <tr>
               <td><strong><?= htmlspecialchars($b['lab_name']) ?></strong></td>
-              <td><?= htmlspecialchars($b['code']) ?></td>
+              
               <td><?= date('M d, Y', strtotime($b['date'])) ?></td>
               <td><?= date('g:i A', strtotime($b['start_time'])) ?> - <?= date('g:i A', strtotime($b['end_time'])) ?></td>
               <td>

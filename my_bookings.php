@@ -382,7 +382,7 @@ table tbody tr:last-child td {
 <div class="sidebar">
   <div class="sidebar-logo">
     <h2>🖥️ LabEase</h2>
-    <p>Computer Lab System</p>
+    <p>Computer Lab Booking System</p>
   </div>
   
   <ul class="sidebar-menu">
