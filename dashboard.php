@@ -379,7 +379,9 @@ tr:hover td { background: #f9fafb; }
   
   <ul class="sidebar-menu">
     <li><a href="dashboard.php" class="active"><span>📊</span> Dashboard</a></li>
-    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
+    
+
+<li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
@@ -531,71 +533,226 @@ tr:hover td { background: #f9fafb; }
         </div>
     </div>
 
-    <!-- Labs Section -->
-    <div class="section-container">
-        <div class="section-header">
-            <h2>🏢 Browse Labs</h2>
-            <div class="search-wrapper">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="labSearch" class="search-input" placeholder="Search labs by name..." onkeyup="filterLabs()">
+<!-- Labs Section -->
+<div class="section-container">
+    <div class="section-header">
+        <h2>🏢 Browse Labs</h2>
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="labSearch" class="search-input" placeholder="Search labs by name..." onkeyup="filterLabs()">
+        </div>
+    </div>
+    
+    <div class="labs-grid" id="labsContainer">
+        <?php if ($labs_result && $labs_result->num_rows > 0): 
+            while($lab = $labs_result->fetch_assoc()): 
+                $total = $lab['total_computers'];
+                $avail = $lab['available_computers'];
+                $percentage = $total > 0 ? round(($avail / $total) * 100) : 0;
+        ?>
+        <div class="lab-card" data-name="<?= strtolower(htmlspecialchars($lab['name'])) ?>">
+            <div class="lab-header">
+                <div class="lab-title" >
+                    <h3 ><?= htmlspecialchars($lab['name']) ?></h3>
+                    <p>📍 <?= htmlspecialchars($lab['location']) ?></p>
+                </div>
+            </div>
+
+            <!-- Added Amenities Icons -->
+            <div class="lab-amenities">
+                <div class="amenity" title="Wi-Fi">📶</div>
+                <div class="amenity" title="Projector">📽️</div>
+                <div class="amenity" title="Air Conditioned">❄️</div>
+            </div>
+            
+            <!-- Action Buttons Row -->
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <?php if(!empty($lab['photo'])): ?>
+                    <button onclick="viewLabPhoto('<?= htmlspecialchars($lab['photo']) ?>', '<?= htmlspecialchars($lab['name']) ?>')" 
+                            style="flex: 1; background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        📷 Show Photo
+                    </button>
+                <?php else: ?>
+                    <button onclick="alert('No photo available for this lab.')" 
+                            style="flex: 1; background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        📷 No Photo
+                    </button>
+                <?php endif; ?>
+                
+                <a href="create.php?lab=<?= $lab['id'] ?>" 
+                   style="flex: 1; background: #28d6feff; color: white; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    🪑 Book Seat
+                </a>
+            </div>
+        </div>
+        <?php endwhile; ?>
+        <?php else: ?>
+        <div class="empty-state">
+            <div class="empty-icon">🏢</div>
+            <h3>No Labs Found</h3>
+            <p>Please check back later.</p>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Photo Modal -->
+<div id="photoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div style="position: relative; max-width: 95%; max-height: 95%; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;" id="modalTitle">Lab Photo</h3>
+            <button onclick="closePhoto()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">×</button>
+        </div>
+        
+        <!-- Photo Container -->
+        <div style="padding: 30px; text-align: center; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+            <img id="modalPhoto" src="" alt="Lab Photo" 
+                 style="max-width: 90%; max-height: 70vh; border-radius: 8px; display: none;"
+                 onload="this.style.display='block'; document.getElementById('loadingSpinner').style.display='none';"
+                 onerror="showPhotoError(this);">
+            
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" style="display: none;">
+                <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                <p style="color: #666;">Loading photo...</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" style="display: none; color: #e74c3c; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📷</div>
+                <h4 style="margin: 0 0 10px 0;">Photo Not Available</h4>
+                <p style="color: #666; margin: 0;">This lab photo could not be loaded.</p>
             </div>
         </div>
         
-        <div class="labs-grid" id="labsContainer">
-            <?php if ($labs_result && $labs_result->num_rows > 0): 
-                while($lab = $labs_result->fetch_assoc()): 
-                    $total = $lab['total_computers'];
-                    $avail = $lab['available_computers'];
-                    $percentage = $total > 0 ? round(($avail / $total) * 100) : 0;
-                    
-                    if ($percentage >= 70) {
-                        $color_class = '#10b981'; $bg_class = '#dcfce7'; $status_text = 'High Availability';
-                    } elseif ($percentage >= 30) {
-                        $color_class = '#f59e0b'; $bg_class = '#fef3c7'; $status_text = 'Filling Fast';
-                    } else {
-                        $color_class = '#ef4444'; $bg_class = '#fee2e2'; $status_text = 'Almost Full';
-                    }
-            ?>
-            <div class="lab-card" data-name="<?= strtolower(htmlspecialchars($lab['name'])) ?>">
-                <div class="lab-header">
-                    <div class="lab-title">
-                        <h3><?= htmlspecialchars($lab['name']) ?></h3>
-                        <p>📍 <?= htmlspecialchars($lab['location']) ?></p>
-                    </div>
-                    <div class="status-pill" style="background: <?= $bg_class ?>; color: <?= $color_class ?>;">
-                        <?= $status_text ?>
-                    </div>
-                </div>
-
-                <!-- Added Amenities Icons -->
-                <div class="lab-amenities">
-                    <div class="amenity" title="Wi-Fi">📶</div>
-                    <div class="amenity" title="Projector">📽️</div>
-                    <div class="amenity" title="Air Conditioned">❄️</div>
-                </div>
-                
-                <div class="capacity-wrapper">
-                    <div class="capacity-labels">
-                        <span>Availability</span>
-                        <span><?= $avail ?> / <?= $total ?> Seats</span>
-                    </div>
-                    <div class="progress-bg">
-                        <div class="progress-fill" style="width: <?= $percentage ?>%; background-color: <?= $color_class ?>;"></div>
-                    </div>
-                </div>
-                
-                <a href="create.php?lab=<?= $lab['id'] ?>" class="btn-book">Book Seat</a>
-            </div>
-            <?php endwhile; ?>
-            <?php else: ?>
-            <div class="empty-state">
-                <div class="empty-icon">🏢</div>
-                <h3>No Labs Found</h3>
-                <p>Please check back later.</p>
-            </div>
-            <?php endif; ?>
+        <!-- Footer with Download Button -->
+        <div style="background: #f8f9fa; padding: 15px 30px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #666; font-size: 14px;" id="photoInfo"></div>
+            <button onclick="downloadPhoto()" id="downloadBtn" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                ⬇️ Download Photo
+            </button>
         </div>
     </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+let currentPhotoData = {};
+
+// Function to view lab photo in modal
+function viewLabPhoto(photoFilename, labName) {
+    const modal = document.getElementById('photoModal');
+    const modalPhoto = document.getElementById('modalPhoto');
+    const modalTitle = document.getElementById('modalTitle');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorMessage = document.getElementById('errorMessage');
+    const photoInfo = document.getElementById('photoInfo');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    // Reset states
+    modalPhoto.style.display = 'none';
+    errorMessage.style.display = 'none';
+    loadingSpinner.style.display = 'block';
+    
+    // Set photo source with cache busting
+    const photoUrl = `../uploads/labs/${encodeURIComponent(photoFilename)}?t=${Date.now()}`;
+    modalPhoto.src = photoUrl;
+    
+    // Store photo data
+    currentPhotoData = {
+        filename: photoFilename,
+        name: labName,
+        url: photoUrl
+    };
+    
+    // Update UI
+    modalTitle.textContent = `${labName} - Photo`;
+    photoInfo.textContent = `Photo: ${photoFilename}`;
+    modal.style.display = 'flex';
+    
+    // Prevent scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+// Function to handle photo loading error
+function showPhotoError(imgElement) {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorMessage = document.getElementById('errorMessage');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    loadingSpinner.style.display = 'none';
+    errorMessage.style.display = 'block';
+    downloadBtn.style.display = 'none';
+    
+    console.error('Failed to load photo:', imgElement.src);
+}
+
+// Function to close photo modal
+function closePhoto() {
+    const modal = document.getElementById('photoModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    
+    // Reset current photo data
+    currentPhotoData = {};
+}
+
+// Function to download photo
+function downloadPhoto() {
+    if (!currentPhotoData.url) {
+        alert('No photo to download.');
+        return;
+    }
+    
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = currentPhotoData.url;
+    link.download = `${currentPhotoData.name.replace(/\s+/g, '_')}_${currentPhotoData.filename}`;
+    link.target = '_blank';
+    
+    // Add to document, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Optional: Show download confirmation
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalText = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = '✅ Downloaded!';
+    downloadBtn.style.background = '#27ae60';
+    
+    setTimeout(() => {
+        downloadBtn.innerHTML = originalText;
+    }, 2000);
+}
+
+// Close modal when clicking outside
+document.getElementById('photoModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePhoto();
+    }
+});
+
+// Add keyboard support
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('photoModal');
+    if (modal.style.display === 'flex') {
+        if (e.key === 'Escape') {
+            closePhoto();
+        }
+        if (e.key === 'd' || e.key === 'D') {
+            downloadPhoto();
+        }
+    }
+});
+</script>
 
     <!-- Upcoming Bookings with Filters -->
     <div class="section-container">

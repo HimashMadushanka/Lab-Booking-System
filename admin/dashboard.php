@@ -117,6 +117,7 @@ $total_labs = $mysqli->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()[
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
+  <a href="admin_labs.php">Manage Labs</a>
   <a href="admin_chat.php">Chat</a>
   <a href="create_notification.php">Notifications</a>
 
