@@ -561,6 +561,7 @@ body {
         <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
         <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
         <li><a href="analytics.php" class="active"><span>📈</span> Analytics</a></li>
+           <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
         <li><a href="feedback.php" ><span>💬</span> Give Feedback</a></li>
         <li><a href="logout.php">🚪 Logout</a></li>
     </ul>

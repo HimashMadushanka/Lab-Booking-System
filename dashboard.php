@@ -21,6 +21,27 @@ if ($hour < 12) {
     $greeting = "Good Evening";
 }
 
+// --- Fetch Notifications ---
+$notification_count = 0;
+$notifications = [];
+
+$notification_sql = "
+    SELECT * FROM notifications 
+    WHERE (user_id = ? OR user_id IS NULL) 
+    AND is_read = FALSE
+    ORDER BY created_at DESC
+    LIMIT 5
+";
+$notification_stmt = $mysqli->prepare($notification_sql);
+$notification_stmt->bind_param("i", $user_id);
+$notification_stmt->execute();
+$notification_result = $notification_stmt->get_result();
+
+while($notification = $notification_result->fetch_assoc()) {
+    $notifications[] = $notification;
+    $notification_count++;
+}
+
 // Initialize variables
 $total_bookings = 0;
 $approved_bookings = 0;
@@ -209,16 +230,26 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 
 /* Notification Bell */
 .notif-wrapper { position: relative; }
-.notif-btn { background: #f3f4f6; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #4b5563; transition: background 0.2s; }
+.notif-btn { background: #f3f4f6; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #4b5563; transition: background 0.2s; position: relative; }
 .notif-btn:hover { background: #e5e7eb; color: #1f2937; }
-.notif-badge { position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 2px solid white; }
-.notif-dropdown { position: absolute; top: 50px; right: 0; width: 300px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; display: none; z-index: 50; overflow: hidden; }
+.notif-badge { position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 10px; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 2px solid white; z-index: 10; }
+.notif-dropdown { position: absolute; top: 50px; right: 0; width: 320px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #f3f4f6; display: none; z-index: 100; overflow: hidden; }
 .notif-dropdown.active { display: block; animation: slideDown 0.2s ease-out; }
-.notif-header { padding: 15px; border-bottom: 1px solid #f3f4f6; font-weight: 600; font-size: 14px; background: #f9fafb; }
-.notif-item { padding: 15px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #4b5563; transition: background 0.2s; cursor: pointer; }
+.notif-header { padding: 15px; border-bottom: 1px solid #f3f4f6; font-weight: 600; font-size: 14px; background: #f9fafb; display: flex; justify-content: space-between; align-items: center; }
+.notif-item { padding: 15px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #4b5563; transition: background 0.2s; cursor: pointer; position: relative; }
 .notif-item:hover { background: #f9fafb; }
-.notif-item strong { display: block; color: #1f2937; margin-bottom: 2px; }
+.notif-item.booking { border-left: 3px solid #3b82f6; }
+.notif-item.announcement { border-left: 3px solid #9333ea; }
+.notif-item.maintenance { border-left: 3px solid #f59e0b; }
+.notif-item.alert { border-left: 3px solid #ef4444; }
+.notif-item strong { display: block; color: #1f2937; margin-bottom: 4px; font-size: 14px; }
 .notif-time { font-size: 11px; color: #9ca3af; margin-top: 4px; display: block; }
+.notif-icon { position: absolute; right: 15px; top: 15px; font-size: 16px; }
+.notif-mark-read { position: absolute; right: 15px; bottom: 15px; background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.notif-mark-read:hover { color: #3b82f6; background: #dbeafe; }
+
+.notif-footer { padding: 10px 15px; text-align: center; border-top: 1px solid #f3f4f6; background: #f9fafb; }
+.notif-footer a { color: #3b82f6; text-decoration: none; font-weight: 600; font-size: 13px; }
 
 .user-profile { display: flex; align-items: center; gap: 12px; }
 .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px; box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3); }
@@ -231,14 +262,15 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 
 /* Stats Grid */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 35px; }
-.stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f3f4f6; }
+.stat-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f3f4f6; cursor: pointer; }
 .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
 .stat-info h3 { font-size: 28px; font-weight: 800; color: #111827; line-height: 1; margin-bottom: 5px; }
 .stat-info p { color: #6b7280; font-size: 14px; font-weight: 500; }
 .bg-blue { background: #dbeafe; color: #2563eb; }
 .bg-green { background: #dcfce7; color: #16a34a; }
-.bg-purple { background: #f3e8ff; color: #9333ea; cursor: pointer; }
+.bg-purple { background: #f3e8ff; color: #9333ea; }
+.bg-orange { background: #fef3c7; color: #d97706; }
 
 /* Sections */
 .section-container { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 30px; border: 1px solid #f3f4f6; overflow: hidden; }
@@ -316,6 +348,7 @@ tr:hover td { background: #f9fafb; }
     .top-bar { flex-direction: column; gap: 15px; align-items: flex-start; }
     .header-right { width: 100%; justify-content: space-between; }
     .next-session-banner { flex-direction: column; text-align: center; gap: 15px; }
+    .notif-dropdown { width: 280px; right: -20px; }
 }
 </style>
 </head>
@@ -330,13 +363,16 @@ tr:hover td { background: #f9fafb; }
   
   <ul class="sidebar-menu">
     <li><a href="dashboard.php" class="active"><span>📊</span> Dashboard</a></li>
+    
+ 
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
+    <li><a href="chat.php"><span>💬</span> Chat with Admin</a></li>
+       <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
-  
-       <li><a href="logout.php">🚪 Logout</a></li>
+    <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
   <div class="logout-btn">
@@ -354,23 +390,57 @@ tr:hover td { background: #f9fafb; }
         </div>
         
         <div class="header-right">
-            <!-- Notification Bell -->
+            <!-- Notification Bell with Real Data -->
             <div class="notif-wrapper">
-           
+                <button class="notif-btn" onclick="toggleNotifications()">
+                    🔔
+                    <?php if ($notification_count > 0): ?>
+                        <span class="notif-badge"><?= $notification_count ?></span>
+                    <?php endif; ?>
+                </button>
+                
                 <div class="notif-dropdown" id="notifDropdown">
-                    <div class="notif-header">Notifications (2)</div>
-                    <!-- Mock Notifications -->
-                    <div class="notif-item">
-                        <strong>Booking Approved ✅</strong>
-                        Your booking for Lab A on Monday was approved.
-                        <span class="notif-time">2 hours ago</span>
+                    <div class="notif-header">
+                        <span>Notifications 
+                            <?php if ($notification_count > 0): ?>
+                                <span style="color: #ef4444;">(<?= $notification_count ?> new)</span>
+                            <?php endif; ?>
+                        </span>
+                        <button onclick="markAllAsRead()" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 12px; padding: 2px 6px;">Mark all read</button>
                     </div>
-                    <div class="notif-item">
-                        <strong>New Lab Added 🏢</strong>
-                        Physics Lab 2 is now available for booking.
-                        <span class="notif-time">Yesterday</span>
+                    
+                    <?php if (!empty($notifications)): ?>
+                        <?php foreach($notifications as $notification): ?>
+                            <div class="notif-item <?= $notification['type'] ?>" data-id="<?= $notification['id'] ?>" onclick="window.location.href='notifications.php'">
+                                <strong><?= htmlspecialchars($notification['title']) ?></strong>
+                                <?= htmlspecialchars($notification['message']) ?>
+                                <span class="notif-time">
+                                    <?= date('M d, h:i A', strtotime($notification['created_at'])) ?>
+                                    <?php if(is_null($notification['user_id'])): ?> • 📢 All Users
+                                    <?php else: ?> • 👤 Personal
+                                    <?php endif; ?>
+                                </span>
+                                <span class="notif-icon">
+                                    <?php if($notification['type'] == 'booking'): ?> 📅
+                                    <?php elseif($notification['type'] == 'maintenance'): ?> 🔧
+                                    <?php elseif($notification['type'] == 'alert'): ?> ⚠️
+                                    <?php else: ?> 📢
+                                    <?php endif; ?>
+                                </span>
+                                <button class="notif-mark-read" onclick="markNotificationAsRead(event, <?= $notification['id'] ?>)">
+                                    Mark read
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="notif-item" style="text-align:center; color:#6b7280;">
+                            No new notifications
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="notif-footer">
+                        <a href="notifications.php">View All Notifications →</a>
                     </div>
-                    <div class="notif-item" style="text-align:center; color:#3b82f6; font-weight:600;">View All Notifications</div>
                 </div>
             </div>
 
@@ -395,12 +465,21 @@ tr:hover td { background: #f9fafb; }
         // Only show if session is in the future
         if ($time_diff > 0):
     ?>
-   
+    <div class="next-session-banner">
+        <div class="ns-content">
+            <h3>⏰ Your Next Lab Session</h3>
+            <p><?= htmlspecialchars($next_session['lab_name']) ?> • <?= date('M d, Y', strtotime($next_session['date'])) ?></p>
+        </div>
+        <div class="ns-timer">
+            <span>Starts in: <?= $hours_until ?> hours</span>
+            <span>🕐 <?= date('g:i A', strtotime($next_session['start_time'])) ?></span>
+        </div>
+    </div>
     <?php endif; endif; ?>
 
     <!-- Stats Cards -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" onclick="window.location.href='my_bookings.php'">
             <div class="stat-icon bg-blue">📚</div>
             <div class="stat-info">
                 <h3><?= $total_bookings ?></h3>
@@ -408,7 +487,7 @@ tr:hover td { background: #f9fafb; }
             </div>
         </div>
         
-        <div class="stat-card">
+        <div class="stat-card" onclick="window.location.href='my_bookings.php?filter=approved'">
             <div class="stat-icon bg-green">✅</div>
             <div class="stat-info">
                 <h3><?= $approved_bookings ?></h3>
@@ -421,6 +500,14 @@ tr:hover td { background: #f9fafb; }
             <div class="stat-info">
                 <h3 style="font-size: 20px;">Calendar</h3>
                 <p>View Schedule</p>
+            </div>
+        </div>
+        
+        <div class="stat-card" onclick="window.location.href='notifications.php'">
+            <div class="stat-icon bg-orange">🔔</div>
+            <div class="stat-info">
+                <h3><?= $notification_count ?></h3>
+                <p>New Notifications</p>
             </div>
         </div>
     </div>
@@ -461,7 +548,7 @@ tr:hover td { background: #f9fafb; }
                     </div>
                 </div>
 
-                <!-- Added Amenities Icons (Static for demo) -->
+                <!-- Added Amenities Icons -->
                 <div class="lab-amenities">
                     <div class="amenity" title="Wi-Fi">📶</div>
                     <div class="amenity" title="Projector">📽️</div>
@@ -575,17 +662,124 @@ tr:hover td { background: #f9fafb; }
 function toggleNotifications() {
     const dropdown = document.getElementById('notifDropdown');
     dropdown.classList.toggle('active');
+    event.stopPropagation();
 }
 
 // Close dropdowns when clicking outside
-window.onclick = function(event) {
-    if (!event.target.matches('.notif-btn') && !event.target.matches('.notif-btn *')) {
-        var dropdowns = document.getElementsByClassName("notif-dropdown");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('active')) {
-                openDropdown.classList.remove('active');
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('notifDropdown');
+    const bell = document.querySelector('.notif-btn');
+    
+    if (!bell.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
+// Mark notification as read
+function markNotificationAsRead(event, notificationId) {
+    event.stopPropagation(); // Prevent click from going to notification item
+    
+    fetch(`mark_read.php?id=${notificationId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the notification item
+                const notificationItem = event.target.closest('.notif-item');
+                notificationItem.remove();
+                
+                // Update notification count
+                updateNotificationCount();
+                
+                // If no notifications left, show message
+                const notifList = document.querySelectorAll('.notif-item');
+                if (notifList.length === 0) {
+                    const dropdown = document.getElementById('notifDropdown');
+                    const header = dropdown.querySelector('.notif-header');
+                    const footer = dropdown.querySelector('.notif-footer');
+                    
+                    const noNotifications = document.createElement('div');
+                    noNotifications.className = 'notif-item';
+                    noNotifications.style.textAlign = 'center';
+                    noNotifications.style.color = '#6b7280';
+                    noNotifications.textContent = 'No new notifications';
+                    
+                    dropdown.insertBefore(noNotifications, footer);
+                    
+                    // Update header
+                    const countSpan = header.querySelector('span span');
+                    if (countSpan) {
+                        countSpan.remove();
+                    }
+                    header.querySelector('span').textContent = 'Notifications';
+                }
             }
+        })
+        .catch(error => {
+            console.error('Error marking as read:', error);
+        });
+}
+
+// Mark all as read
+function markAllAsRead() {
+    if (confirm('Mark all notifications as read?')) {
+        fetch('mark_read.php?all=true')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear all notifications from dropdown
+                    const dropdown = document.getElementById('notifDropdown');
+                    const notifItems = dropdown.querySelectorAll('.notif-item');
+                    notifItems.forEach(item => {
+                        if (!item.querySelector('.notif-mark-read')) return; // Skip the "no notifications" item
+                        item.remove();
+                    });
+                    
+                    // Add "no notifications" message
+                    const noNotifications = document.createElement('div');
+                    noNotifications.className = 'notif-item';
+                    noNotifications.style.textAlign = 'center';
+                    noNotifications.style.color = '#6b7280';
+                    noNotifications.textContent = 'No new notifications';
+                    
+                    const footer = dropdown.querySelector('.notif-footer');
+                    dropdown.insertBefore(noNotifications, footer);
+                    
+                    // Update header
+                    const header = dropdown.querySelector('.notif-header');
+                    const countSpan = header.querySelector('span span');
+                    if (countSpan) {
+                        countSpan.remove();
+                    }
+                    header.querySelector('span').textContent = 'Notifications';
+                    
+                    // Update badge count
+                    updateNotificationCount();
+                }
+            });
+    }
+}
+
+// Update notification badge count
+function updateNotificationCount() {
+    // Update the badge
+    const badge = document.querySelector('.notif-badge');
+    const currentCount = parseInt(badge?.textContent || 0);
+    
+    if (currentCount > 1) {
+        badge.textContent = currentCount - 1;
+    } else {
+        // Remove badge if count is 0
+        if (badge) {
+            badge.remove();
+        }
+    }
+    
+    // Also update stats card if exists
+    const notifStat = document.querySelector('.stat-card .stat-info h3');
+    if (notifStat) {
+        const currentStatCount = parseInt(notifStat.textContent);
+        if (currentStatCount > 0) {
+            notifStat.textContent = currentStatCount - 1;
         }
     }
 }
@@ -658,7 +852,45 @@ function renderCalendar() {
 }
 function previousMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
 function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
-document.getElementById('calendarModal').addEventListener('click', (e) => { if (e.target.id === 'calendarModal') closeCalendar(); });
+
+// Close calendar when clicking outside
+document.getElementById('calendarModal').addEventListener('click', (e) => { 
+    if (e.target.id === 'calendarModal') closeCalendar(); 
+});
+
+// Auto-refresh notifications every 30 seconds
+setInterval(() => {
+    fetch('get_unread_count.php')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.querySelector('.notif-badge');
+            const notifStat = document.querySelector('.stat-card .stat-info h3');
+            
+            if (data.count > 0) {
+                if (!badge) {
+                    // Create badge
+                    const bell = document.querySelector('.notif-btn');
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'notif-badge';
+                    newBadge.textContent = data.count;
+                    bell.appendChild(newBadge);
+                } else {
+                    badge.textContent = data.count;
+                }
+                
+                // Update stats card
+                if (notifStat) {
+                    notifStat.textContent = data.count;
+                }
+            } else if (badge) {
+                badge.remove();
+                if (notifStat) {
+                    notifStat.textContent = '0';
+                }
+            }
+        })
+        .catch(error => console.error('Error refreshing notifications:', error));
+}, 30000); // 30 seconds
 </script>
 
 </body>
