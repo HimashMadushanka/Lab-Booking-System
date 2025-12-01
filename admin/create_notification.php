@@ -103,11 +103,13 @@ body {
 .header h1 {
     font-size: 28px;
     margin-bottom: 5px;
+    
 }
 
 .header p {
     color: #bdc3c7;
     font-size: 14px;
+   
 }
 
 .header-buttons {
