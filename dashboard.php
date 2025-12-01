@@ -21,25 +21,40 @@ if ($hour < 12) {
     $greeting = "Good Evening";
 }
 
-// --- Fetch Notifications ---
+// --- Fetch Notifications from NEW database structure ---
 $notification_count = 0;
 $notifications = [];
 
 $notification_sql = "
-    SELECT * FROM notifications 
-    WHERE (user_id = ? OR user_id IS NULL) 
-    AND is_read = FALSE
-    ORDER BY created_at DESC
+    SELECT 
+        un.id as user_notification_id,
+        un.is_read,
+        un.read_at,
+        an.title,
+        an.message,
+        an.type,
+        an.created_at,
+        u.name as created_by_name
+    FROM user_notifications un
+    JOIN admin_notifications an ON un.notification_id = an.id
+    LEFT JOIN users u ON an.created_by = u.id
+    WHERE un.user_id = ? 
+    AND un.is_read = FALSE
+    AND an.deleted_at IS NULL
+    AND (an.expires_at IS NULL OR an.expires_at > NOW())
+    ORDER BY an.created_at DESC
     LIMIT 5
 ";
 $notification_stmt = $mysqli->prepare($notification_sql);
-$notification_stmt->bind_param("i", $user_id);
-$notification_stmt->execute();
-$notification_result = $notification_stmt->get_result();
+if ($notification_stmt) {
+    $notification_stmt->bind_param("i", $user_id);
+    $notification_stmt->execute();
+    $notification_result = $notification_stmt->get_result();
 
-while($notification = $notification_result->fetch_assoc()) {
-    $notifications[] = $notification;
-    $notification_count++;
+    while($notification = $notification_result->fetch_assoc()) {
+        $notifications[] = $notification;
+        $notification_count++;
+    }
 }
 
 // Initialize variables
@@ -238,10 +253,11 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 .notif-header { padding: 15px; border-bottom: 1px solid #f3f4f6; font-weight: 600; font-size: 14px; background: #f9fafb; display: flex; justify-content: space-between; align-items: center; }
 .notif-item { padding: 15px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #4b5563; transition: background 0.2s; cursor: pointer; position: relative; }
 .notif-item:hover { background: #f9fafb; }
-.notif-item.booking { border-left: 3px solid #3b82f6; }
-.notif-item.announcement { border-left: 3px solid #9333ea; }
-.notif-item.maintenance { border-left: 3px solid #f59e0b; }
-.notif-item.alert { border-left: 3px solid #ef4444; }
+.notif-item.info { border-left: 3px solid #3b82f6; }
+.notif-item.success { border-left: 3px solid #10b981; }
+.notif-item.warning { border-left: 3px solid #f59e0b; }
+.notif-item.danger { border-left: 3px solid #ef4444; }
+.notif-item.system { border-left: 3px solid #8b5cf6; }
 .notif-item strong { display: block; color: #1f2937; margin-bottom: 4px; font-size: 14px; }
 .notif-time { font-size: 11px; color: #9ca3af; margin-top: 4px; display: block; }
 .notif-icon { position: absolute; right: 15px; top: 15px; font-size: 16px; }
@@ -363,14 +379,12 @@ tr:hover td { background: #f9fafb; }
   
   <ul class="sidebar-menu">
     <li><a href="dashboard.php" class="active"><span>📊</span> Dashboard</a></li>
-    
- 
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
     <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
     <li><a href="chat.php"><span>💬</span> Chat with Admin</a></li>
-       <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
+    <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
@@ -411,23 +425,28 @@ tr:hover td { background: #f9fafb; }
                     
                     <?php if (!empty($notifications)): ?>
                         <?php foreach($notifications as $notification): ?>
-                            <div class="notif-item <?= $notification['type'] ?>" data-id="<?= $notification['id'] ?>" onclick="window.location.href='notifications.php'">
+                            <div class="notif-item <?= $notification['type'] ?>" data-id="<?= $notification['user_notification_id'] ?>" onclick="window.location.href='notifications.php'">
                                 <strong><?= htmlspecialchars($notification['title']) ?></strong>
                                 <?= htmlspecialchars($notification['message']) ?>
                                 <span class="notif-time">
                                     <?= date('M d, h:i A', strtotime($notification['created_at'])) ?>
-                                    <?php if(is_null($notification['user_id'])): ?> • 📢 All Users
-                                    <?php else: ?> • 👤 Personal
+                                    <?php if($notification['created_by_name']): ?>
+                                        • From: <?= htmlspecialchars($notification['created_by_name']) ?>
                                     <?php endif; ?>
                                 </span>
                                 <span class="notif-icon">
-                                    <?php if($notification['type'] == 'booking'): ?> 📅
-                                    <?php elseif($notification['type'] == 'maintenance'): ?> 🔧
-                                    <?php elseif($notification['type'] == 'alert'): ?> ⚠️
-                                    <?php else: ?> 📢
-                                    <?php endif; ?>
+                                    <?php 
+                                    switch($notification['type']):
+                                        case 'info': ?>ℹ️<?php break;
+                                        case 'success': ?>✅<?php break;
+                                        case 'warning': ?>⚠️<?php break;
+                                        case 'danger': ?>🚨<?php break;
+                                        case 'system': ?>⚙️<?php break;
+                                        default: ?>📢<?php break;
+                                    endswitch; 
+                                    ?>
                                 </span>
-                                <button class="notif-mark-read" onclick="markNotificationAsRead(event, <?= $notification['id'] ?>)">
+                                <button class="notif-mark-read" onclick="markNotificationAsRead(event, <?= $notification['user_notification_id'] ?>)">
                                     Mark read
                                 </button>
                             </div>
@@ -679,7 +698,7 @@ document.addEventListener('click', function(event) {
 function markNotificationAsRead(event, notificationId) {
     event.stopPropagation(); // Prevent click from going to notification item
     
-    fetch(`mark_read.php?id=${notificationId}`)
+    fetch(`mark_notification_read.php?id=${notificationId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -722,40 +741,8 @@ function markNotificationAsRead(event, notificationId) {
 // Mark all as read
 function markAllAsRead() {
     if (confirm('Mark all notifications as read?')) {
-        fetch('mark_read.php?all=true')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Clear all notifications from dropdown
-                    const dropdown = document.getElementById('notifDropdown');
-                    const notifItems = dropdown.querySelectorAll('.notif-item');
-                    notifItems.forEach(item => {
-                        if (!item.querySelector('.notif-mark-read')) return; // Skip the "no notifications" item
-                        item.remove();
-                    });
-                    
-                    // Add "no notifications" message
-                    const noNotifications = document.createElement('div');
-                    noNotifications.className = 'notif-item';
-                    noNotifications.style.textAlign = 'center';
-                    noNotifications.style.color = '#6b7280';
-                    noNotifications.textContent = 'No new notifications';
-                    
-                    const footer = dropdown.querySelector('.notif-footer');
-                    dropdown.insertBefore(noNotifications, footer);
-                    
-                    // Update header
-                    const header = dropdown.querySelector('.notif-header');
-                    const countSpan = header.querySelector('span span');
-                    if (countSpan) {
-                        countSpan.remove();
-                    }
-                    header.querySelector('span').textContent = 'Notifications';
-                    
-                    // Update badge count
-                    updateNotificationCount();
-                }
-            });
+        // Call the mark_all_read endpoint
+        window.location.href = 'notifications.php?mark_all_read=true';
     }
 }
 

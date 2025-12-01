@@ -287,23 +287,7 @@ body {
   font-size: 15px;
 }
 
-.back-link {
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: #dbeafe;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
 
-.back-link:hover {
-  background: #3b82f6;
-  color: white;
-}
 
 /* Stats Overview */
 .stats-overview {
@@ -556,14 +540,15 @@ body {
     </div>
     
     <ul class="sidebar-menu">
-        <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
-        <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
-        <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
-        <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
-        <li><a href="analytics.php" class="active"><span>📈</span> Analytics</a></li>
-           <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
-        <li><a href="feedback.php" ><span>💬</span> Give Feedback</a></li>
-        <li><a href="logout.php">🚪 Logout</a></li>
+    <li><a href="dashboard.php" ><span>📊</span> Dashboard</a></li>
+    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
+    <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="analytics.php"  class="active"><span>📈</span> Analytics</a></li>
+    <li><a href="chat.php"><span>💬</span> Chat with Admin</a></li>
+    <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
+    <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+    <li><a href="logout.php">🚪 Logout</a></li>
     </ul>
     
     <div class="logout-btn">
@@ -580,7 +565,7 @@ body {
       <h1>📈 Analytics Dashboard</h1>
       <p>Comprehensive insights into your lab booking patterns and usage</p>
     </div>
-    <a href="dashboard.php" class="back-link">← Back to Dashboard</a>
+    
   </div>
 
   <!-- Stats Overview -->

@@ -505,13 +505,15 @@ if ($_SESSION['role'] === 'admin') {
   </div>
   
   <ul class="sidebar-menu">
-    <li><a href="dashboard.php"><span>📊</span> Dashboard</a></li>
+    <li><a href="dashboard.php" ><span>📊</span> Dashboard</a></li>
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
-       
     <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
+    <li><a href="chat.php"><span>💬</span> Chat with Admin</a></li>
     <li><a href="notifications.php"><span>🔔</span> Notifications</a></li>
+
+
     <?php if ($_SESSION['role'] === 'admin'): ?>
     <li>
       <a href="admin_pending.php">
@@ -533,12 +535,17 @@ if ($_SESSION['role'] === 'admin') {
 
 <!-- Main Content -->
 <div class="main-content">
+  
+
+
   <div class="booking-container">
     
     <div class="page-header">
       <h2>📅 Book a Lab</h2>
       <p>Select your preferred lab and time slot</p>
     </div>
+
+<div class="booking-container">
 
     <div class="info-box">
       <h4>ℹ️ Booking Rules</h4>
