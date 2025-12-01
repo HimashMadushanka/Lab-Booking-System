@@ -9,6 +9,33 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$message = '';
+
+// Handle delete booking
+if (isset($_GET['delete_id'])) {
+    $delete_id = $_GET['delete_id'];
+    
+    // Verify the booking belongs to the user
+    $verify_sql = "SELECT id FROM bookings WHERE id = ? AND user_id = ?";
+    $verify_stmt = $mysqli->prepare($verify_sql);
+    $verify_stmt->bind_param("ii", $delete_id, $user_id);
+    $verify_stmt->execute();
+    $verify_result = $verify_stmt->get_result();
+    
+    if ($verify_result->num_rows > 0) {
+        $delete_sql = "DELETE FROM bookings WHERE id = ?";
+        $delete_stmt = $mysqli->prepare($delete_sql);
+        $delete_stmt->bind_param("i", $delete_id);
+        
+        if ($delete_stmt->execute()) {
+            $message = "<div class='alert alert-success'>Booking deleted successfully!</div>";
+        } else {
+            $message = "<div class='alert alert-error'>Error deleting booking.</div>";
+        }
+    } else {
+        $message = "<div class='alert alert-error'>Unauthorized action.</div>";
+    }
+}
 
 // Fetch all bookings for this user
 $sql = "
@@ -16,6 +43,8 @@ SELECT
     b.id, 
     c.code AS computer_code, 
     l.name AS lab_name, 
+    l.id AS lab_id,
+    c.id AS computer_id,
     b.date, 
     b.start_time, 
     b.end_time, 
@@ -49,6 +78,26 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #f8f9fa;
   min-height: 100vh;
+}
+
+/* Alert Messages */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
 }
 
 /* Sidebar Navigation */
@@ -313,6 +362,52 @@ table tbody tr:last-child td {
   font-size: 13px;
 }
 
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.btn-edit:hover {
+  background: #bfdbfe;
+  color: #1e40af;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  background: #fecaca;
+  color: #b91c1c;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .empty-state {
   padding: 60px 30px;
   text-align: center;
@@ -373,6 +468,15 @@ table tbody tr:last-child td {
   .computer-code {
     font-size: 12px;
   }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
 }
 </style>
 </head>
@@ -390,7 +494,7 @@ table tbody tr:last-child td {
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php" class="active"><span>📋</span> My Bookings</a></li>
-    <li><a href="feedback.php"><span>💬</span>Give Feedback</a>
+    <li><a href="feedback.php"><span>💬</span>Give Feedback</a></li>
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
@@ -407,6 +511,8 @@ table tbody tr:last-child td {
     <h1>📋 My Bookings</h1>
     <p>View and manage all your lab bookings</p>
   </div>
+
+  <?php echo $message; ?>
 
   <!-- Stats Summary -->
   <?php
@@ -456,10 +562,12 @@ table tbody tr:last-child td {
             <tr>
               <th>#</th>
               <th>Lab</th>
+              <th>Computer</th>
               <th>Date</th>
               <th>Start Time</th>
               <th>End Time</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -467,6 +575,7 @@ table tbody tr:last-child td {
               <tr>
                 <td class="row-number"><?= $i++ ?></td>
                 <td class="lab-name"><?= htmlspecialchars($row['lab_name']) ?></td>
+                <td><span class="computer-code"><?= htmlspecialchars($row['computer_code']) ?></span></td>
                 <td><?= date('M d, Y', strtotime($row['date'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['start_time'])) ?></td>
                 <td><?= date('g:i A', strtotime($row['end_time'])) ?></td>
@@ -474,6 +583,18 @@ table tbody tr:last-child td {
                   <span class="status-badge <?= strtolower($row['status']) ?>">
                     <?= ucfirst($row['status']) ?>
                   </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="edit_booking.php?id=<?= $row['id'] ?>" class="btn btn-edit">
+                      ✏️ Edit
+                    </a>
+                    <a href="my_bookings.php?delete_id=<?= $row['id'] ?>" 
+                       class="btn btn-delete" 
+                       onclick="return confirm('Are you sure you want to delete this booking?')">
+                      🗑️ Delete
+                    </a>
+                  </div>
                 </td>
               </tr>
             <?php endwhile; ?>

@@ -110,7 +110,18 @@ try {
 body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fc; min-height: 100vh; color: #1f2937; }
 
 /* Sidebar */
-.sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1e293b; padding: 30px 0; z-index: 100; transition: width 0.3s; }
+/* Sidebar Navigation */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1e293b;
+  padding: 30px 0;
+  z-index: 100;
+}
+
     .sidebar-logo {
       padding: 0 25px 30px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -129,14 +140,64 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
       margin-top: 5px;
     }
 
-.sidebar-menu { list-style: none; }
-.sidebar-menu li { margin-bottom: 5px; }
-.sidebar-menu a { display: flex; align-items: center; padding: 14px 25px; color: #cbd5e1; text-decoration: none; transition: all 0.2s ease; font-weight: 500; }
-.sidebar-menu a:hover { background: rgba(255,255,255,0.05); color: white; padding-left: 30px; }
-.sidebar-menu a.active { background: #3b82f6; color: white; border-right: 4px solid #93c5fd; }
-.logout-btn { position: absolute; bottom: 30px; left: 25px; right: 25px; }
-.logout-btn a { display: block; padding: 12px 20px; background: #ef4444; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.2s; }
-.logout-btn a:hover { background: #dc2626; }
+.sidebar-menu {
+  list-style: none;
+}
+
+.sidebar-menu li {
+  margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  padding: 14px 25px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.sidebar-menu a:hover {
+  background: rgba(255,255,255,0.05);
+  color: white;
+  padding-left: 30px;
+}
+
+.sidebar-menu a.active {
+  background: #3b82f6;
+  color: white;
+  border-left: 4px solid #60a5fa;
+}
+
+.sidebar-menu a span {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.logout-btn {
+  position: absolute;
+  bottom: 30px;
+  left: 25px;
+  right: 25px;
+}
+
+.logout-btn a {
+  display: block;
+  padding: 12px 20px;
+  background: #dc2626;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.logout-btn a:hover {
+  background: #b91c1c;
+}
+
 
 /* Main Content */
 .main-content { margin-left: 260px; padding: 30px 40px; }
@@ -262,26 +323,24 @@ tr:hover td { background: #f9fafb; }
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="sidebar-logo">
-        <h2>🖥️ LabEase</h2>
-        <p >Computer Lab Booking System</p>
-    </div>
-    
-    <ul class="sidebar-menu">
-        <li><a href="dashboard.php" class="active"><span>📊</span>&nbsp; Dashboard</a></li>
-        <li><a href="calendar.php"><span>📅</span>&nbsp; Calendar</a></li>
-        <li><a href="create.php"><span>➕</span>&nbsp; Book Lab</a></li>
-        <li><a href="my_bookings.php"><span>📋</span>&nbsp; My Bookings</a></li>
-       
-        <li><a href="feedback.php"><span>💬</span>&nbsp; Feedback</a></li>
-          <li><a href="logout.php">🚪 Logout</a></li>
-    </ul>
-
-    <div class="logout-btn">
-        <a href="logout.php">Sign Out</a>
-    </div>
+  <div class="sidebar-logo">
+    <h2>🖥️ LabEase</h2>
+    <p>Computer Lab Booking System</p>
+  </div>
+  
+  <ul class="sidebar-menu">
+    <li><a href="dashboard.php" class="active"><span>📊</span> Dashboard</a></li>
+    <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
+    <li><a href="create.php"><span>➕</span> Book a Lab</a></li>
+    <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+       <li><a href="logout.php">🚪 Logout</a></li>
+  </ul>
+  
+  <div class="logout-btn">
+    <a href="logout.php">Logout</a>
+  </div>
 </div>
-
 <!-- Main Content -->
 <div class="main-content">
   
