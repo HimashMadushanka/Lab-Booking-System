@@ -59,74 +59,603 @@ if (isset($_GET['delete'])) {
 
 // --- Fetch all notifications ---
 $result = $mysqli->query("SELECT * FROM admin_notifications ORDER BY created_at DESC");
-?>
 
+// Count stats
+$total_notifications = $result->num_rows;
+$high_priority = $mysqli->query("SELECT COUNT(*) as cnt FROM admin_notifications WHERE priority='high'")->fetch_assoc()['cnt'];
+$active_notifications = $mysqli->query("SELECT COUNT(*) as cnt FROM admin_notifications WHERE is_published=1 AND (expires_at IS NULL OR expires_at >= NOW())")->fetch_assoc()['cnt'];
+?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin Notifications</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Notifications | Lab Management System</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #b8eaf8ff;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 25px 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.header p {
+    color: #bdc3c7;
+    font-size: 14px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.back-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn {
+    background: #3498db;
+}
+
+
+.back-btn:hover {
+    background: #2980b9;
+}
+
+/* Alerts */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    border-left: 4px solid #3498db;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.stat-card.high {
+    border-left-color: #e74c3c;
+}
+
+.stat-card.active {
+    border-left-color: #27ae60;
+}
+
+/* Form Section */
+.form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.form-section h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select,
+.form-group input[type="datetime-local"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ecf0f1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.submit-btn {
+    background: #27ae60;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+    background: #229954;
+}
+
+/* Table Section */
+.table-section {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 25px 30px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.section-header h2 {
+    color: #2c3e50;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table thead {
+    background: #34495e;
+}
+
+table th {
+    padding: 15px 20px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+table td {
+    padding: 18px 20px;
+    color: #2c3e50;
+    font-size: 14px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+table tbody tr {
+    transition: background 0.2s ease;
+}
+
+table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Type Icons and Badges */
+.type-icon {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.type-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.type-badge.announcement {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.type-badge.alert {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.type-badge.reminder {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.type-badge.update {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.priority-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-badge.high {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.priority-badge.medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.priority-badge.low {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.btn-edit:hover {
+    background: #bfdbfe;
+    color: #1e40af;
+}
+
+.btn-delete {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-delete:hover {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.empty-state {
+    padding: 60px 30px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+    opacity: 0.3;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+    font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    table th, table td {
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
 </head>
 <body>
-<h2>Admin Notifications</h2>
 
-<?php if ($success) echo "<p style='color:green;'>$success</p>"; ?>
-<?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+<!-- Header -->
+<div class="header">
+    <div class="header-content">
+        <div>
+            <h1>📢 Admin Notifications</h1>
+            <p>Create and manage system-wide notifications</p>
+        </div>
+        <div class="header-buttons">
+            <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
+ 
+        </div>
+    </div>
+</div>
 
-<h3>Create / Edit Notification</h3>
-<form method="POST">
-    <input type="hidden" name="id" id="notif_id">
-    <label>Title:</label><br>
-    <input type="text" name="title" id="title" required><br><br>
+<!-- Alerts -->
+<?php if ($success): ?>
+    <div class="alert alert-success">✅ <?= htmlspecialchars($success) ?></div>
+<?php endif; ?>
 
-    <label>Message:</label><br>
-    <textarea name="message" id="message" required></textarea><br><br>
+<?php if ($error): ?>
+    <div class="alert alert-error">❌ <?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
 
-    <label>Type:</label>
-    <select name="type" id="type">
-        <option value="info">Info</option>
-        <option value="warning">Warning</option>
-        <option value="danger">Danger</option>
-        <option value="success">Success</option>
-    </select><br><br>
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3><?= $total_notifications ?></h3>
+        <p>Total Notifications</p>
+    </div>
+    <div class="stat-card high">
+        <h3><?= $high_priority ?></h3>
+        <p>High Priority</p>
+    </div>
+    <div class="stat-card active">
+        <h3><?= $active_notifications ?></h3>
+        <p>Active Notifications</p>
+    </div>
+</div>
 
-    <label>Priority:</label>
-    <select name="priority" id="priority">
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-    </select><br><br>
+<!-- Create/Edit Form -->
+<div class="form-section">
+    <h2>✏️ Create / Edit Notification</h2>
+    <form method="POST">
+        <input type="hidden" name="id" id="notif_id">
+        
+        <div class="form-group">
+            <label>Title *</label>
+            <input type="text" name="title" id="title" placeholder="Enter notification title" required>
+        </div>
 
-    <label>Publish At (optional):</label>
-    <input type="datetime-local" name="publish_at" id="publish_at"><br><br>
+        <div class="form-group">
+            <label>Message *</label>
+            <textarea name="message" id="message" placeholder="Enter notification message" required></textarea>
+        </div>
 
-    <label>Expires At (optional):</label>
-    <input type="datetime-local" name="expires_at" id="expires_at"><br><br>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Type</label>
+                <select name="type" id="type">
+                    <option value="announcement">📢 Announcement</option>
+                    <option value="alert">⚠️ Alert</option>
+                    <option value="reminder">⏰ Reminder</option>
+                    <option value="update">📝 Update</option>
+                </select>
+            </div>
 
-    <button type="submit">Save Notification</button>
-</form>
+            <div class="form-group">
+                <label>Priority</label>
+                <select name="priority" id="priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+        </div>
 
-<h3>All Notifications</h3>
-<table border="1" cellpadding="5">
-    <tr>
-        <th>ID</th><th>Title</th><th>Message</th><th>Type</th><th>Priority</th>
-        <th>Publish At</th><th>Expires At</th><th>Actions</th>
-    </tr>
-    <?php while ($row = $result->fetch_assoc()): ?>
-    <tr>
-        <td><?= $row['id'] ?></td>
-        <td><?= $row['title'] ?></td>
-        <td><?= $row['message'] ?></td>
-        <td><?= $row['type'] ?></td>
-        <td><?= $row['priority'] ?></td>
-        <td><?= $row['publish_at'] ?></td>
-        <td><?= $row['expires_at'] ?></td>
-        <td>
-            <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this notification?')">Delete</a> |
-            <a href="#" onclick="editNotification(<?= $row['id'] ?>,'<?= addslashes($row['title']) ?>','<?= addslashes($row['message']) ?>','<?= $row['type'] ?>','<?= $row['priority'] ?>','<?= $row['publish_at'] ?>','<?= $row['expires_at'] ?>')">Edit</a>
-        </td>
-    </tr>
-    <?php endwhile; ?>
-</table>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Publish At (optional)</label>
+                <input type="datetime-local" name="publish_at" id="publish_at">
+            </div>
+
+            <div class="form-group">
+                <label>Expires At (optional)</label>
+                <input type="datetime-local" name="expires_at" id="expires_at">
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">💾 Save Notification</button>
+    </form>
+</div>
+
+<!-- All Notifications Table -->
+<div class="table-section">
+    <div class="section-header">
+        <h2>📋 All Notifications</h2>
+    </div>
+    
+    <div class="table-wrapper">
+        <?php if ($result->num_rows > 0): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Message</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Publish At</th>
+                        <th>Expires At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    mysqli_data_seek($result, 0);
+                    while ($row = $result->fetch_assoc()): 
+                        $type_icons = [
+                            'announcement' => '📢',
+                            'alert' => '⚠️',
+                            'reminder' => '⏰',
+                            'update' => '📝'
+                        ];
+                        $icon = $type_icons[$row['type']] ?? '🔔';
+                    ?>
+                    <tr>
+                        <td><strong>#<?= $row['id'] ?></strong></td>
+                        <td>
+                            <span class="type-icon"><?= $icon ?></span>
+                            <?= htmlspecialchars($row['title']) ?>
+                        </td>
+                        <td><?= htmlspecialchars(substr($row['message'], 0, 50)) . (strlen($row['message']) > 50 ? '...' : '') ?></td>
+                        <td>
+                            <span class="type-badge <?= $row['type'] ?>">
+                                <?= ucfirst($row['type']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge <?= $row['priority'] ?>">
+                                <?= ucfirst($row['priority']) ?>
+                            </span>
+                        </td>
+                        <td><?= $row['publish_at'] ? date('M d, Y g:i A', strtotime($row['publish_at'])) : '-' ?></td>
+                        <td><?= $row['expires_at'] ? date('M d, Y g:i A', strtotime($row['expires_at'])) : '-' ?></td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="#" class="btn btn-edit" 
+                                   onclick="editNotification(<?= $row['id'] ?>,'<?= addslashes($row['title']) ?>','<?= addslashes($row['message']) ?>','<?= $row['type'] ?>','<?= $row['priority'] ?>','<?= $row['publish_at'] ?>','<?= $row['expires_at'] ?>'); return false;">
+                                    ✏️ Edit
+                                </a>
+                                <a href="?delete=<?= $row['id'] ?>" class="btn btn-delete" 
+                                   onclick="return confirm('Are you sure you want to delete this notification?')">
+                                    🗑️ Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>No notifications created yet</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
 <script>
 function editNotification(id, title, message, type, priority, publish_at, expires_at) {
@@ -135,8 +664,11 @@ function editNotification(id, title, message, type, priority, publish_at, expire
     document.getElementById('message').value = message;
     document.getElementById('type').value = type;
     document.getElementById('priority').value = priority;
-    document.getElementById('publish_at').value = publish_at ? publish_at.replace(' ', 'T') : '';
-    document.getElementById('expires_at').value = expires_at ? expires_at.replace(' ', 'T') : '';
+    document.getElementById('publish_at').value = publish_at && publish_at !== 'null' ? publish_at.replace(' ', 'T') : '';
+    document.getElementById('expires_at').value = expires_at && expires_at !== 'null' ? expires_at.replace(' ', 'T') : '';
+    
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
