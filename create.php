@@ -509,6 +509,7 @@ if ($_SESSION['role'] === 'admin') {
     <li><a href="calendar.php"><span>📅</span> Calendar View</a></li>
     <li><a href="create.php" class="active"><span>➕</span> Book a Lab</a></li>
     <li><a href="my_bookings.php"><span>📋</span> My Bookings</a></li>
+    <li><a href="analytics.php"><span>📈</span> Analytics</a></li>
     <?php if ($_SESSION['role'] === 'admin'): ?>
     <li>
       <a href="admin_pending.php">
