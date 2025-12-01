@@ -24,11 +24,11 @@ if (isset($_GET['mark_replied'])) {
 }
 
 // Check if rating column exists
-$check_rating = $conn->query("SHOW COLUMNS FROM feedback LIKE 'rating'");
+$check_rating = $mysqli->query("SHOW COLUMNS FROM feedback LIKE 'rating'");
 $rating_column_exists = $check_rating->num_rows > 0;
 
 // Get feedback with user info
-$result = $conn->query("
+$result = $mysqli->query("
     SELECT f.*, u.name AS user_name, u.email
     FROM feedback f
     JOIN users u ON f.user_id = u.id
@@ -42,12 +42,12 @@ $result = $conn->query("
 ");
 
 // Stats for dashboard
-$total_feedback = $conn->query("SELECT COUNT(*) as cnt FROM feedback")->fetch_assoc()['cnt'];
-$new_feedback = $conn->query("SELECT COUNT(*) as cnt FROM feedback WHERE status='new'")->fetch_assoc()['cnt'];
+$total_feedback = $mysqli->query("SELECT COUNT(*) as cnt FROM feedback")->fetch_assoc()['cnt'];
+$new_feedback = $mysqli->query("SELECT COUNT(*) as cnt FROM feedback WHERE status='new'")->fetch_assoc()['cnt'];
 
 // Handle average rating calculation safely
 if ($rating_column_exists) {
-    $avg_rating_result = $conn->query("SELECT AVG(rating) as avg FROM feedback WHERE rating IS NOT NULL");
+    $avg_rating_result = $mysqli->query("SELECT AVG(rating) as avg FROM feedback WHERE rating IS NOT NULL");
     $avg_rating_data = $avg_rating_result->fetch_assoc();
     $avg_rating = $avg_rating_data['avg'] ? number_format($avg_rating_data['avg'], 1) : '0.0';
 } else {

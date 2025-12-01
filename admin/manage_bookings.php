@@ -18,7 +18,7 @@ if (isset($_SESSION['success'])) {
 }
 
 // Fixed SQL query without merge conflicts
-$result = $conn->query("
+$result = $mysqli->query("
     SELECT b.*, u.name AS user_name, c.code AS computer_code, l.name as lab_name
     FROM bookings b
     JOIN users u ON b.user_id=u.id
@@ -34,9 +34,9 @@ $result = $conn->query("
 ");
 
 // Stats for dashboard
-$total_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings")->fetch_assoc()['cnt'];
-$pending_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
-$approved_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved'")->fetch_assoc()['cnt'];
+$total_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings")->fetch_assoc()['cnt'];
+$pending_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
+$approved_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved'")->fetch_assoc()['cnt'];
 ?>
 <!DOCTYPE html>
 <html>

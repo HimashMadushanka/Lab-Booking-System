@@ -7,8 +7,8 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
-// Get booking statistics for charts
-$daily_bookings = $conn->query("
+// Get booking statistics for charts - Fixed $conn to $mysqli
+$daily_bookings = $mysqli->query("
     SELECT DATE(date) as booking_date, COUNT(*) as count 
     FROM bookings 
     WHERE date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
@@ -16,13 +16,13 @@ $daily_bookings = $conn->query("
     ORDER BY booking_date
 ");
 
-$status_distribution = $conn->query("
+$status_distribution = $mysqli->query("
     SELECT status, COUNT(*) as count 
     FROM bookings 
     GROUP BY status
 ");
 
-$monthly_trends = $conn->query("
+$monthly_trends = $mysqli->query("
     SELECT DATE_FORMAT(date, '%Y-%m') as month, COUNT(*) as count 
     FROM bookings 
     WHERE date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
@@ -30,7 +30,7 @@ $monthly_trends = $conn->query("
     ORDER BY month
 ");
 
-$lab_usage = $conn->query("
+$lab_usage = $mysqli->query("
     SELECT l.name as lab_name, COUNT(b.id) as booking_count
     FROM labs l
     LEFT JOIN computers c ON l.id = c.lab_id
@@ -39,7 +39,7 @@ $lab_usage = $conn->query("
     ORDER BY booking_count DESC
 ");
 
-$peak_hours = $conn->query("
+$peak_hours = $mysqli->query("
     SELECT HOUR(start_time) as hour, COUNT(*) as count
     FROM bookings 
     WHERE status = 'approved'
@@ -268,10 +268,11 @@ while($row = $peak_hours->fetch_assoc()) {
     <!-- Quick Stats -->
     <div class="stats-grid">
         <?php
-        $total_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings")->fetch_assoc()['cnt'];
-        $pending = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
-        $approved = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved'")->fetch_assoc()['cnt'];
-        $today_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE date=CURDATE()")->fetch_assoc()['cnt'];
+        // Fixed these queries too - changed $conn to $mysqli
+        $total_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings")->fetch_assoc()['cnt'];
+        $pending = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
+        $approved = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved'")->fetch_assoc()['cnt'];
+        $today_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE date=CURDATE()")->fetch_assoc()['cnt'];
         ?>
         <div class="stat-card">
             <h4><?= $total_bookings ?></h4>

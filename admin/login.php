@@ -3,11 +3,11 @@ session_start();
 require '../db.php';
 
 if (isset($_POST['login'])) {
-    $username = $_POST['username'];
+    $username = $mysqli->real_escape_string($_POST['username']);
     $password = md5($_POST['password']);
 
     $sql = "SELECT * FROM admin WHERE username='$username' AND password='$password'";
-    $res = $conn->query($sql);
+    $res = $mysqli->query($sql);
 
     if ($res->num_rows > 0) {
         $_SESSION['admin'] = $username;
@@ -20,11 +20,11 @@ if (isset($_POST['login'])) {
 
 // Handle forgot password
 if (isset($_POST['reset_password'])) {
-    $username = $_POST['reset_username'];
+    $username = $mysqli->real_escape_string($_POST['reset_username']);
     
     // Check if admin exists
     $check_sql = "SELECT * FROM admin WHERE username='$username'";
-    $check_res = $conn->query($check_sql);
+    $check_res = $mysqli->query($check_sql);
     
     if ($check_res->num_rows > 0) {
         // Generate a simple reset code (6 digits)
@@ -41,11 +41,13 @@ if (isset($_POST['reset_password'])) {
 
 // Handle password reset with code
 if (isset($_POST['confirm_reset'])) {
-    $code = $_POST['reset_code'];
+    $code = $mysqli->real_escape_string($_POST['reset_code']);
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
     
-    if ($code != $_SESSION['admin_reset_code']) {
+    if (!isset($_SESSION['admin_reset_code'])) {
+        $error = "Reset session expired! Please start again.";
+    } elseif ($code != $_SESSION['admin_reset_code']) {
         $error = "Invalid reset code!";
     } elseif (time() > $_SESSION['admin_reset_expires']) {
         $error = "Reset code has expired!";
@@ -59,7 +61,7 @@ if (isset($_POST['confirm_reset'])) {
         $username = $_SESSION['admin_reset_username'];
         $update_sql = "UPDATE admin SET password='$hashed_password' WHERE username='$username'";
         
-        if ($conn->query($update_sql)) {
+        if ($mysqli->query($update_sql)) {
             // Clear reset session
             unset($_SESSION['admin_reset_code']);
             unset($_SESSION['admin_reset_username']);
@@ -67,7 +69,7 @@ if (isset($_POST['confirm_reset'])) {
             
             $success = "Password reset successfully! You can now login with your new password.";
         } else {
-            $error = "Error resetting password: " . $conn->error;
+            $error = "Error resetting password: " . $mysqli->error;
         }
     }
 }

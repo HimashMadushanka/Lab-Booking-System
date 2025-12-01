@@ -6,11 +6,11 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
-// Stats
-$total_users = $conn->query("SELECT COUNT(*) AS cnt FROM users")->fetch_assoc()['cnt'];
-$total_bookings = $conn->query("SELECT COUNT(*) AS cnt FROM bookings")->fetch_assoc()['cnt'];
-$pending = $conn->query("SELECT COUNT(*) AS cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
-$total_labs = $conn->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()['cnt'];
+// Stats - Fixed $conn to $mysqli
+$total_users = $mysqli->query("SELECT COUNT(*) AS cnt FROM users")->fetch_assoc()['cnt'];
+$total_bookings = $mysqli->query("SELECT COUNT(*) AS cnt FROM bookings")->fetch_assoc()['cnt'];
+$pending = $mysqli->query("SELECT COUNT(*) AS cnt FROM bookings WHERE status='pending'")->fetch_assoc()['cnt'];
+$total_labs = $mysqli->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()['cnt'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -117,9 +117,11 @@ $total_labs = $conn->query("SELECT COUNT(*) AS cnt FROM labs")->fetch_assoc()['c
 
 <div class="links">
   <a href="manage_bookings.php">Manage Bookings</a>
-  <a href="create_lab.php">Create New Lab</a>
-  <a href="admin_feedback.php">View User Feedback</a>
+
   <a href="analytics.php">View Analytics</a>
+  
+
+  <a href="admin_feedback.php">View User Feedback</a>
 </div>
 
 <div class="pdf-section">
