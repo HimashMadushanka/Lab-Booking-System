@@ -9,7 +9,8 @@ if (!isset($_SESSION['admin'])) {
 
 $id = intval($_GET['id']);
 
-$update = $conn->prepare("UPDATE bookings SET status = 'rejected' WHERE id = ?");
+// Use $mysqli instead of $conn
+$update = $mysqli->prepare("UPDATE bookings SET status = 'rejected' WHERE id = ?");
 $update->bind_param('i', $id);
 
 if ($update->execute()) {

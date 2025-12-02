@@ -40,7 +40,7 @@ switch($type) {
 }
 
 function generateBookingsPDF($date_from, $date_to) {
-    global $conn;
+    global $mysqli; // CHANGED FROM $conn TO $mysqli
     
     $pdf = new FPDF();
     $pdf->AddPage();
@@ -53,7 +53,7 @@ function generateBookingsPDF($date_from, $date_to) {
     $pdf->Ln(5);
     
     // Get bookings data for the date range
-    $result = $conn->query("
+    $result = $mysqli->query("
         SELECT b.*, u.name as user_name, c.code as computer_code, l.name as lab_name
         FROM bookings b
         JOIN users u ON b.user_id = u.id
@@ -111,10 +111,10 @@ function generateBookingsPDF($date_from, $date_to) {
     $pdf->Cell(0,10,'Summary Statistics:',0,1);
     $pdf->SetFont('Arial','',10);
     
-    $total = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $approved = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $pending = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $rejected = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='rejected' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $total = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $approved = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $pending = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $rejected = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='rejected' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
     
     $pdf->Cell(0,6,"Total Bookings: $total",0,1);
     $pdf->Cell(0,6,"Approved: $approved",0,1);
@@ -131,7 +131,7 @@ function generateBookingsPDF($date_from, $date_to) {
 }
 
 function generateUsersPDF($date_from, $date_to) {
-    global $conn;
+    global $mysqli; // CHANGED FROM $conn TO $mysqli
     
     $pdf = new FPDF();
     $pdf->AddPage();
@@ -144,7 +144,7 @@ function generateUsersPDF($date_from, $date_to) {
     $pdf->Ln(5);
     
     // Get users data with booking counts for the period
-    $result = $conn->query("
+    $result = $mysqli->query("
         SELECT u.*, 
                COUNT(b.id) as total_bookings,
                SUM(CASE WHEN b.status='approved' THEN 1 ELSE 0 END) as approved_bookings
@@ -184,9 +184,9 @@ function generateUsersPDF($date_from, $date_to) {
     $pdf->Cell(0,10,'Summary:',0,1);
     $pdf->SetFont('Arial','',10);
     
-    $total_users = $conn->query("SELECT COUNT(*) as cnt FROM users")->fetch_assoc()['cnt'];
-    $active_users = $conn->query("SELECT COUNT(DISTINCT user_id) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $total_admins = $conn->query("SELECT COUNT(*) as cnt FROM users WHERE role='admin'")->fetch_assoc()['cnt'];
+    $total_users = $mysqli->query("SELECT COUNT(*) as cnt FROM users")->fetch_assoc()['cnt'];
+    $active_users = $mysqli->query("SELECT COUNT(DISTINCT user_id) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $total_admins = $mysqli->query("SELECT COUNT(*) as cnt FROM users WHERE role='admin'")->fetch_assoc()['cnt'];
     
     $pdf->Cell(0,6,"Total Users: $total_users",0,1);
     $pdf->Cell(0,6,"Active Users (this period): $active_users",0,1);
@@ -197,7 +197,7 @@ function generateUsersPDF($date_from, $date_to) {
 }
 
 function generateAnalyticsPDF($date_from, $date_to) {
-    global $conn;
+    global $mysqli; // CHANGED FROM $conn TO $mysqli
     
     $pdf = new FPDF();
     $pdf->AddPage();
@@ -214,10 +214,10 @@ function generateAnalyticsPDF($date_from, $date_to) {
     $pdf->Cell(0,10,'Overall Statistics',0,1);
     $pdf->SetFont('Arial','',10);
     
-    $total_bookings = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $approved = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $pending = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
-    $rejected = $conn->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='rejected' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $total_bookings = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $approved = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='approved' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $pending = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='pending' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
+    $rejected = $mysqli->query("SELECT COUNT(*) as cnt FROM bookings WHERE status='rejected' AND date BETWEEN '$date_from' AND '$date_to'")->fetch_assoc()['cnt'];
     
     $pdf->Cell(0,6,"Total Bookings: $total_bookings",0,1);
     
@@ -234,7 +234,7 @@ function generateAnalyticsPDF($date_from, $date_to) {
     $pdf->Cell(0,10,'Lab Usage Ranking',0,1);
     $pdf->SetFont('Arial','',10);
     
-    $labs = $conn->query("
+    $labs = $mysqli->query("
         SELECT l.name, COUNT(b.id) as bookings_count
         FROM labs l
         LEFT JOIN computers c ON l.id = c.lab_id
@@ -257,7 +257,7 @@ function generateAnalyticsPDF($date_from, $date_to) {
     $pdf->Cell(0,10,'Peak Booking Hours',0,1);
     $pdf->SetFont('Arial','',10);
     
-    $hours = $conn->query("
+    $hours = $mysqli->query("
         SELECT HOUR(start_time) as hour, COUNT(*) as count
         FROM bookings 
         WHERE date BETWEEN '$date_from' AND '$date_to' AND status = 'approved'

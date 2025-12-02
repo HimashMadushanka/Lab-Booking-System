@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin'])) {
 $id = intval($_GET['id']);
 
 // Get the booking details first
-$booking_query = $conn->prepare("
+$booking_query = $mysqli->prepare("
     SELECT computer_id, date, start_time, end_time 
     FROM bookings 
     WHERE id = ?
@@ -28,7 +28,7 @@ if ($booking_result->num_rows === 0) {
 $booking = $booking_result->fetch_assoc();
 
 // Check if there's already an approved booking for the same computer and time slot
-$conflict_check = $conn->prepare("
+$conflict_check = $mysqli->prepare("
     SELECT id, user_id 
     FROM bookings 
     WHERE computer_id = ? 
@@ -53,7 +53,7 @@ if ($conflict_result->num_rows > 0) {
     $conflict = $conflict_result->fetch_assoc();
     
     // Get user info for the conflicting booking
-    $user_query = $conn->prepare("SELECT name FROM users WHERE id = ?");
+    $user_query = $mysqli->prepare("SELECT name FROM users WHERE id = ?");
     $user_query->bind_param('i', $conflict['user_id']);
     $user_query->execute();
     $user_result = $user_query->get_result();
@@ -65,7 +65,7 @@ if ($conflict_result->num_rows > 0) {
 }
 
 // If no conflict, approve the booking
-$update = $conn->prepare("UPDATE bookings SET status = 'approved' WHERE id = ?");
+$update = $mysqli->prepare("UPDATE bookings SET status = 'approved' WHERE id = ?");
 $update->bind_param('i', $id);
 
 if ($update->execute()) {

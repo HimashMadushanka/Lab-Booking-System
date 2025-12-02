@@ -93,7 +93,7 @@ while($row = $peak_hours->fetch_assoc()) {
         }
                 
         .header {
-            background: linear-gradient(135deg, #172c45ff 0%,  #401c62ff 100%);
+            background:  #2c3e50;;
             color: white;
             padding: 30px;
             border-radius: 20px;

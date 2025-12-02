@@ -442,6 +442,7 @@ body {
     <li><a href="chat.php"><span>💬</span> Chat with Admin</a></li>
     <li><a href="notifications.php" class="active"><span>🔔</span> Notifications</a></li>
     <li><a href="feedback.php"><span>💬</span> Give Feedback</a></li>
+    <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
   <div class="logout-btn">

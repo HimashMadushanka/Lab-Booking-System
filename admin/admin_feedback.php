@@ -8,17 +8,17 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
-// Handle status updates
+// Handle status updates - CHANGE $conn to $mysqli
 if (isset($_GET['mark_read'])) {
     $feedback_id = intval($_GET['mark_read']);
-    $conn->query("UPDATE feedback SET status='read' WHERE id=$feedback_id");
+    $mysqli->query("UPDATE feedback SET status='read' WHERE id=$feedback_id");
     header("Location: admin_feedback.php");
     exit;
 }
 
 if (isset($_GET['mark_replied'])) {
     $feedback_id = intval($_GET['mark_replied']);
-    $conn->query("UPDATE feedback SET status='replied' WHERE id=$feedback_id");
+    $mysqli->query("UPDATE feedback SET status='replied' WHERE id=$feedback_id");
     header("Location: admin_feedback.php");
     exit;
 }
