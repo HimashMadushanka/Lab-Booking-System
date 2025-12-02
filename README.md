@@ -10,13 +10,13 @@ Users can register/login, view and book available labs, track bookings, and admi
 - [Features](#features)  
 - [Technology Stack](#technology-stack)  
 - [Getting Started](#getting-started)  
-  - [Prerequisites](#prerequisites)  
-  - [Installation](#installation)  
-  - [Database Setup](#database-setup)  
-  - [Running the Application](#running-the-application)  
+- [Prerequisites](#prerequisites)  
+- [Installation](#installation)  
+- [Database Setup](#database-setup)  
+- [Running the Application](#running-the-application)  
 - [Usage](#usage)  
-  - [User Workflow](#user-workflow)  
-  - [Admin Workflow](#admin-workflow)  
+- [User Workflow](#user-workflow)  
+- [Admin Workflow](#admin-workflow)  
 - [Project Structure](#project-structure)  
 - [Contributing](#contributing)  
 - [License](#license)  
@@ -24,14 +24,26 @@ Users can register/login, view and book available labs, track bookings, and admi
 
 ---
 
+
 ## Features
 
-- User registration and authentication  
-- User dashboard: view available labs, make bookings, view/current bookings  
-- Administrator panel: manage labs, review bookings, generate PDF reports  
-- Feedback mechanism  
-- Booking history and status tracking  
-- Secure logout / session management
+👨‍💼 Admin Panel
+
+- Admin login system
+- Create, edit, delete notifications
+- Send notifications to users
+- Manage labs
+- Add lab details with photos
+- Manage computers/equipment
+- View all user conversations/messages
+
+👨‍🎓 User Panel
+
+- User registration & login
+- Dashboard with statistics
+- View received notifications
+- Start conversations with admin
+- View replies
 
 ---
 
@@ -41,11 +53,10 @@ Users can register/login, view and book available labs, track bookings, and admi
 - **Frontend**: HTML, CSS  
 - **Database**: MySQL  
 - **Libraries/Tools**: FPDF (for PDF generation)  
-- **Environment**: Web server (e.g., Apache) with PHP support  
+- **Environment**: Web server with PHP support  
 
 ---
 
-## Getting Started
 
 ### Prerequisites
 
