@@ -403,7 +403,7 @@ while($row = $daily_bookings->fetch_assoc()) {
     <div class="header-left">
       <div class="logo">🎯</div>
       <div class="header-title">
-        <h1>Lab Management System</h1>
+        <h1>LabEasy</h1>
         <p>Administrator Dashboard</p>
       </div>
     </div>

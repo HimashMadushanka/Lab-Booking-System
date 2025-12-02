@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 23, 2025 at 07:51 AM
+-- Generation Time: Dec 02, 2025 at 06:03 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -34,6 +34,15 @@ CREATE TABLE `actions_log` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `actions_log`
+--
+
+INSERT INTO `actions_log` (`id`, `user_id`, `action`, `created_at`) VALUES
+(1, 5, 'Requested password reset', '2025-11-30 15:44:27'),
+(2, 1, 'Requested password reset', '2025-11-30 15:44:43'),
+(3, 5, 'Requested password reset', '2025-11-30 15:45:02');
+
 -- --------------------------------------------------------
 
 --
@@ -51,7 +60,34 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id`, `username`, `password`) VALUES
-(1, 'admin', '0192023a7bbd73250516f069df18b500');
+(1, 'admin', 'e10adc3949ba59abbe56e057f20f883e');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_notifications`
+--
+
+CREATE TABLE `admin_notifications` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `type` enum('info','warning','danger','success') DEFAULT 'info',
+  `priority` enum('low','medium','high') DEFAULT 'low',
+  `created_by` int(11) DEFAULT NULL,
+  `is_published` tinyint(1) DEFAULT 1,
+  `publish_at` datetime DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin_notifications`
+--
+
+INSERT INTO `admin_notifications` (`id`, `title`, `message`, `type`, `priority`, `created_by`, `is_published`, `publish_at`, `expires_at`, `created_at`, `deleted_at`) VALUES
+(1, 'dede', 'ded', 'warning', '', NULL, 1, '2025-12-16 19:45:00', '2025-12-30 19:45:00', '2025-12-01 14:16:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -75,14 +111,68 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `computer_id`, `date`, `start_time`, `end_time`, `status`, `created_at`) VALUES
-(1, 1, 1, '2025-10-15', '07:53:00', '08:54:00', 'approved', '2025-10-12 13:22:36'),
-(3, 1, 1, '2025-10-23', '10:39:00', '22:39:00', 'approved', '2025-10-21 14:06:39'),
-(4, 1, 1, '2025-10-24', '15:10:00', '17:40:00', 'approved', '2025-10-22 00:08:14'),
-(7, 1, 2, '2025-10-27', '06:56:00', '02:55:00', 'approved', '2025-10-22 01:20:40'),
-(8, 1, 1, '2025-11-19', '09:24:00', '10:25:00', 'pending', '2025-11-11 02:53:59'),
-(9, 1, 1, '2025-11-14', '15:00:00', '17:00:00', 'pending', '2025-11-14 08:33:26'),
-(10, 1, 1, '2025-11-15', '08:21:00', '09:26:00', 'pending', '2025-11-14 08:51:45'),
-(11, 4, 1, '2025-11-20', '12:44:00', '14:47:00', 'pending', '2025-11-18 06:14:58');
+(12, 6, 1, '2025-12-01', '00:54:00', '01:55:00', 'approved', '2025-11-30 16:22:06'),
+(15, 6, 2, '2025-12-05', '10:15:00', '11:16:00', 'rejected', '2025-12-02 04:45:10');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_conversations`
+--
+
+CREATE TABLE `chat_conversations` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `admin_id` int(11) DEFAULT NULL,
+  `subject` varchar(255) DEFAULT NULL,
+  `status` enum('open','pending','resolved','closed') DEFAULT 'open',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `chat_conversations`
+--
+
+INSERT INTO `chat_conversations` (`id`, `user_id`, `admin_id`, `subject`, `status`, `created_at`, `updated_at`) VALUES
+(1, 6, NULL, 'Booking Issues', 'closed', '2025-12-01 06:12:53', '2025-12-02 04:48:18');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `id` int(11) NOT NULL,
+  `conversation_id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message`, `is_read`, `created_at`) VALUES
+(1, 1, 6, 'nhjjh', 1, '2025-12-01 06:12:53'),
+(2, 1, 6, 'g', 1, '2025-12-01 09:44:22'),
+(5, 1, 6, 'l', 1, '2025-12-01 09:49:46'),
+(6, 1, 7, 'k', 1, '2025-12-01 10:01:58'),
+(7, 1, 6, 'l', 1, '2025-12-01 10:02:01'),
+(8, 1, 6, 'lo', 1, '2025-12-01 10:02:11'),
+(9, 1, 7, 'ukk', 1, '2025-12-01 10:02:49'),
+(10, 1, 6, 'lo', 1, '2025-12-01 10:02:51'),
+(11, 1, 7, 'lololol', 1, '2025-12-01 10:03:07'),
+(12, 1, 6, 'lo', 1, '2025-12-01 10:03:07'),
+(13, 1, 7, '///', 1, '2025-12-01 10:08:14'),
+(14, 1, 6, 'lo', 1, '2025-12-01 10:08:18'),
+(15, 1, 6, 'lo', 1, '2025-12-01 10:08:24'),
+(16, 1, 6, '.l', 1, '2025-12-01 10:08:40'),
+(17, 1, 7, 'ggg', 1, '2025-12-01 15:25:45'),
+(18, 1, 6, 'ddd', 1, '2025-12-02 04:16:28');
 
 -- --------------------------------------------------------
 
@@ -129,8 +219,9 @@ CREATE TABLE `feedback` (
 --
 
 INSERT INTO `feedback` (`id`, `user_id`, `subject`, `message`, `rating`, `status`, `created_at`) VALUES
-(1, 1, 'Great System!', 'The lab booking system works perfectly. Very easy to use.', 5, 'replied', '2025-10-21 11:40:16'),
-(8, 1, 'help', 'hello', 5, 'replied', '2025-10-22 00:11:34');
+(9, 6, 'help', 'hhhh', 5, 'replied', '2025-11-30 16:38:50'),
+(10, 6, 'help', 'hhhh', 4, 'replied', '2025-11-30 16:39:06'),
+(11, 6, 'help', 'ygtyt6y', 5, 'replied', '2025-12-02 04:51:22');
 
 -- --------------------------------------------------------
 
@@ -142,6 +233,7 @@ CREATE TABLE `labs` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `location` varchar(100) DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   `capacity` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -149,26 +241,12 @@ CREATE TABLE `labs` (
 -- Dumping data for table `labs`
 --
 
-INSERT INTO `labs` (`id`, `name`, `location`, `capacity`) VALUES
-(1, 'FOC Lab A', 'Building A - Room 101', 30),
-(2, 'FOC Lab B', 'Building A - Room 102', 25),
-(3, 'FOC Lab C', 'Building B - Room 201', 20),
-(4, 'FOC Lab D', 'Building B - Room 202', 20),
-(5, 'FOC Lab E', 'Building C - Room 301', 35);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `password_resets`
---
-
-CREATE TABLE `password_resets` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `labs` (`id`, `name`, `location`, `photo`, `capacity`) VALUES
+(1, 'FOC Lab A', 'Building A - Room 101', NULL, 30),
+(2, 'FOC Lab B', 'Building A - Room 102', NULL, 25),
+(3, 'FOC Lab C', 'Building B - Room 201', NULL, 20),
+(4, 'FOC Lab D', 'Building B - Room 202', NULL, 20),
+(5, 'FOC Lab E', 'Building C - Room 301', NULL, 35);
 
 -- --------------------------------------------------------
 
@@ -182,18 +260,41 @@ CREATE TABLE `users` (
   `email` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('user','admin') NOT NULL DEFAULT 'user',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `security_question` varchar(255) DEFAULT NULL,
+  `security_answer` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`) VALUES
-(1, 'Himash', 'Himashmadushanka975@gmail.com', '$2y$10$a.PvCwaiD1nyHKF/wODIiew5p4v/VlV3HRvcsmMXeO1TCw177PTnm', 'user', '2025-10-10 07:55:11'),
-(2, 'Himash', 'Himashmadushanka75@gmail.com', '$2y$10$qFbDFIOjQeS2Cnkp/8zsKuPgMwv5zE0ftKvUycSz0HgRnoJHAgpyC', 'user', '2025-10-10 08:32:16'),
-(3, 'madu', 'Himashmadushanka@gmail.com', '$2y$10$6Sd3TmYCKHkRGS0BmqW8iOcK3e4qQ3N3ysoTSfIfK79f4U8aYjxH.', 'user', '2025-10-18 17:13:29'),
-(4, 'Savindi Hewage', 'hewagesavindi@gmail.com', '$2y$10$ENHCdvdNRUsbSHelpgt.FerO85oypOuEAKwEIJFR.bC4DWb9ZKBsq', 'user', '2025-11-18 05:15:24');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`, `security_question`, `security_answer`) VALUES
+(6, 'Himash', 'Himashmadushanka975@gmail.com', '$2y$10$W44ulONRimrh196JCtrRtO.awFD7fY5RMNMqd49Tp5azLdjYIrI9i', 'user', '2025-11-30 16:18:11', NULL, NULL),
+(7, 'System Admin', 'admin@labease.com', 'e10adc3949ba59abbe56e057f20f883e', 'admin', '2025-12-01 09:53:56', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_notifications`
+--
+
+CREATE TABLE `user_notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `notification_id` int(11) NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `sent_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `read_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_notifications`
+--
+
+INSERT INTO `user_notifications` (`id`, `user_id`, `notification_id`, `is_read`, `sent_at`, `read_at`) VALUES
+(1, 7, 1, 0, '2025-12-01 14:16:03', NULL),
+(2, 6, 1, 0, '2025-12-01 14:16:03', NULL);
 
 --
 -- Indexes for dumped tables
@@ -212,12 +313,34 @@ ALTER TABLE `admin`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `admin_notifications`
+--
+ALTER TABLE `admin_notifications`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `bookings`
 --
 ALTER TABLE `bookings`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `computer_id` (`computer_id`);
+
+--
+-- Indexes for table `chat_conversations`
+--
+ALTER TABLE `chat_conversations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `fk_chat_admin` (`admin_id`);
+
+--
+-- Indexes for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `conversation_id` (`conversation_id`),
+  ADD KEY `sender_id` (`sender_id`);
 
 --
 -- Indexes for table `computers`
@@ -241,20 +364,18 @@ ALTER TABLE `labs`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `password_resets`
---
-ALTER TABLE `password_resets`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`),
-  ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `idx_token_expires` (`token`,`expires_at`);
-
---
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `user_notifications`
+--
+ALTER TABLE `user_notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `notification_id` (`notification_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -264,7 +385,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `actions_log`
 --
 ALTER TABLE `actions_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `admin`
@@ -273,10 +394,28 @@ ALTER TABLE `admin`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `admin_notifications`
+--
+ALTER TABLE `admin_notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `chat_conversations`
+--
+ALTER TABLE `chat_conversations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `computers`
@@ -288,25 +427,25 @@ ALTER TABLE `computers`
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `labs`
 --
 ALTER TABLE `labs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `password_resets`
---
-ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `user_notifications`
+--
+ALTER TABLE `user_notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Constraints for dumped tables
@@ -318,6 +457,20 @@ ALTER TABLE `users`
 ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`computer_id`) REFERENCES `computers` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `chat_conversations`
+--
+ALTER TABLE `chat_conversations`
+  ADD CONSTRAINT `chat_conversations_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_chat_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`conversation_id`) REFERENCES `chat_conversations` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `computers`
@@ -332,10 +485,10 @@ ALTER TABLE `feedback`
   ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `password_resets`
+-- Constraints for table `user_notifications`
 --
-ALTER TABLE `password_resets`
-  ADD CONSTRAINT `password_resets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `user_notifications`
+  ADD CONSTRAINT `user_notifications_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `admin_notifications` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
