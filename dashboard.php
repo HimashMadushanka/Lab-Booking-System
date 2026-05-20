@@ -391,9 +391,7 @@ tr:hover td { background: #f9fafb; }
     <li><a href="logout.php">🚪 Logout</a></li>
   </ul>
   
-  <div class="logout-btn">
-    <a href="logout.php">Logout</a>
-  </div>
+
 </div>
 <!-- Main Content -->
 <div class="main-content">

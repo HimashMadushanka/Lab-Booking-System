@@ -551,9 +551,7 @@ body {
     <li><a href="logout.php">🚪 Logout</a></li>
     </ul>
     
-    <div class="logout-btn">
-        <a href="logout.php">Logout</a>
-    </div>
+
 </div>
 
 <!-- Main Content -->
