@@ -36,18 +36,18 @@ It helps students reserve computer labs easily while enabling administrators to 
 # 📸 System Screenshots
 
 ## Admin Dashboard
-- Statistics Cards
-- Booking Analytics
-- Status Charts
-- Quick Actions
-- Reports Section
+- ![alt text](image.png)
+- ![alt text](image-1.png)
+- ![alt text](image-2.png)
+- ![alt text](image-3.png)
+- ![alt text](image-4.png)
 
 ## User Dashboard
-- Greeting Banner
-- Upcoming Sessions
-- Notification System
-- Calendar Integration
-- Browse Labs Section
+- ![alt text](image-5.png)
+- ![alt text](image-7.png)
+- ![alt text](image-6.png)
+- ![alt text](image-9.png)
+- ![alt text](image-8.png)
 
 ---
 
