@@ -138,6 +138,18 @@ The project includes multiple security mechanisms to ensure system safety.
 
 ---
 
+# 🌟 Support the Project
+
+If you like this project, please give it a ⭐ on GitHub.
+
+It helps:
+-  Improve future development
+-  Support open-source learning
+-  Share with other developers
+
+---
+
+
 # 👨‍💻 Developed By
 
 **K. Himash Madushanka**  
