@@ -1,71 +1,165 @@
-# Lab Booking System
+# 🖥️ LabEase – Computer Lab Booking Management System
 
-A web-based system for managing laboratory bookings. Built with PHP, HTML, CSS and MySQL.  
-Users can register/login, view and book available labs, track bookings, and administrators can manage lab resources, bookings and generate reports.
-
----
-
-## Table of Contents
-
-- [Features](#features)  
-- [Technology Stack](#technology-stack)  
-- [Getting Started](#getting-started)  
-- [Prerequisites](#prerequisites)  
-- [Installation](#installation)  
-- [Database Setup](#database-setup)  
-- [Running the Application](#running-the-application)  
-- [Usage](#usage)  
-- [User Workflow](#user-workflow)  
-- [Admin Workflow](#admin-workflow)  
-- [Project Structure](#project-structure)  
-- [Contributing](#contributing)  
-- [License](#license)  
-- [Contact](#contact)
+LabEase is a modern web-based Computer Lab Booking System developed using PHP, MySQL, HTML, CSS, and JavaScript.  
+It helps students reserve computer labs easily while enabling administrators to manage bookings, notifications, analytics, reports, and lab resources efficiently.
 
 ---
 
+# ✨ Features
 
-## Features
+## 👨‍🎓 Student Features
+- User Registration & Login
+- Book Computer Labs
+- View Upcoming Sessions
+- Booking Status Tracking
+- Interactive Dashboard
+- Real-Time Notifications
+- Calendar View
+- Chat with Admin
+- Feedback Submission
+- Download Lab Photos
+- Search & Filter Labs
 
-👨‍💼 Admin Panel
-
-- Admin login system
-- Create, edit, delete notifications
-- Send notifications to users
-- Manage labs
-- Add lab details with photos
-- Manage computers/equipment
-- View all user conversations/messages
-
-👨‍🎓 User Panel
-
-- User registration & login
-- Dashboard with statistics
-- View received notifications
-- Start conversations with admin
-- View replies
-
----
-
-## Technology Stack
-
-- **Backend**: PHP  
-- **Frontend**: HTML, CSS  
-- **Database**: MySQL  
-- **Libraries/Tools**: FPDF (for PDF generation)  
-- **Environment**: Web server with PHP support  
+## 👨‍💼 Admin Features
+- Admin Dashboard
+- Booking Management
+- Approve / Reject Reservations
+- Lab Management
+- Analytics & Charts
+- Notification Management
+- Feedback Monitoring
+- PDF Report Generation
+- User Management
 
 ---
 
+# 📸 System Screenshots
 
-### Prerequisites
+## Admin Dashboard
+- Statistics Cards
+- Booking Analytics
+- Status Charts
+- Quick Actions
+- Reports Section
 
-- Web server with PHP support (e.g., Apache, Nginx)  
-- MySQL (or compatible) database  
-- (Optional) A local development environment such as XAMPP, WAMP, LAMP  
+## User Dashboard
+- Greeting Banner
+- Upcoming Sessions
+- Notification System
+- Calendar Integration
+- Browse Labs Section
 
-### Installation
+---
 
-1. Clone the repository  
-   ```bash
-   git clone https://github.com/HimashMadushanka/Lab-Booking-System.git
+# 🛠️ Technologies Used
+
+| Technology | Purpose |
+|------------|----------|
+| PHP | Backend Development |
+| MySQL | Database Management |
+| HTML5 | Structure |
+| CSS3 | Styling |
+| JavaScript | Interactive Features |
+| Chart.js | Analytics Charts |
+| XAMPP | Local Server Environment |
+
+---
+
+# 📊 Dashboard Features
+
+## 👨‍💼 Admin Dashboard
+The admin dashboard provides complete management and monitoring capabilities for the system.
+
+### Features
+-  Total Users Counter
+-  Total Labs Overview
+-  Booking Statistics
+-  Daily Booking Charts
+-  Status Distribution Analytics
+-  Quick Management Tools
+
+---
+
+## 👨‍🎓 User Dashboard
+The user dashboard allows students to manage bookings efficiently.
+
+### Features
+-  Total Bookings Overview
+-  Approved Sessions Counter
+-  Notification Center
+-  Next Session Countdown
+-  Lab Search System
+
+---
+
+# 🔔 Notification System
+
+The notification module provides real-time communication between admins and users.
+
+### Features
+-  Real-time Notifications
+-  Mark as Read Functionality
+-  Notification Badge Counter
+-  Admin Broadcast Notifications
+
+---
+
+# 📅 Booking System
+
+## 👨‍🎓 Student Features
+Students can:
+-  Select Available Labs
+-  Choose Booking Date & Time
+-  View Approval Status
+-  Track Upcoming Sessions
+
+## 👨‍💼 Admin Features
+Administrators can:
+-  Approve Bookings
+-  Reject Bookings
+-  Monitor Booking History
+
+---
+
+# 📈 Analytics
+
+The system integrates Chart.js for advanced data visualization.
+
+### Analytics Features
+-  Daily Booking Activity
+-  Booking Status Distribution
+-  Interactive Dashboard Charts
+
+---
+
+# 🔐 Security Features
+
+The project includes multiple security mechanisms to ensure system safety.
+
+### Security Implementations
+-  Session Authentication
+-  Admin Authorization
+-  SQL Injection Prevention using Prepared Statements
+-  Secure Form Handling
+-  Input Validation
+
+
+---
+
+# 🌟 Support the Project
+
+If you like this project, please give it a ⭐ on GitHub.
+
+It helps:
+-  Support open-source learning
+-  Share with other developers
+
+---
+
+
+# 👨‍💻 Developed By
+
+**K. Himash Madushanka**  
+🎓 Data Science Undergraduate
+
+
