@@ -1,13 +1,13 @@
-# 🖥️ LabEase – Computer Lab Booking Management System
+#  LabEase – Computer Lab Booking Management System
 
 LabEase is a modern web-based Computer Lab Booking System developed using PHP, MySQL, HTML, CSS, and JavaScript.  
 It helps students reserve computer labs easily while enabling administrators to manage bookings, notifications, analytics, reports, and lab resources efficiently.
 
 ---
 
-# ✨ Features
+#  Features
 
-## 👨‍🎓 Student Features
+##  Student Features
 - User Registration & Login
 - Book Computer Labs
 - View Upcoming Sessions
@@ -20,7 +20,7 @@ It helps students reserve computer labs easily while enabling administrators to 
 - Download Lab Photos
 - Search & Filter Labs
 
-## 👨‍💼 Admin Features
+##  Admin Features
 - Admin Dashboard
 - Booking Management
 - Approve / Reject Reservations
@@ -33,7 +33,7 @@ It helps students reserve computer labs easily while enabling administrators to 
 
 ---
 
-# 📸 System Screenshots
+#  System Screenshots
 
 ## Admin Dashboard
 ![alt text](image-1.png)
@@ -43,7 +43,7 @@ It helps students reserve computer labs easily while enabling administrators to 
 
 ---
 
-# 🛠️ Technologies Used
+#  Technologies Used
 
 | Technology | Purpose |
 |------------|----------|
@@ -57,9 +57,9 @@ It helps students reserve computer labs easily while enabling administrators to 
 
 ---
 
-# 📊 Dashboard Features
+#  Dashboard Features
 
-## 👨‍💼 Admin Dashboard
+##  Admin Dashboard
 The admin dashboard provides complete management and monitoring capabilities for the system.
 
 ### Features
@@ -72,7 +72,7 @@ The admin dashboard provides complete management and monitoring capabilities for
 
 ---
 
-## 👨‍🎓 User Dashboard
+##  User Dashboard
 The user dashboard allows students to manage bookings efficiently.
 
 ### Features
@@ -84,7 +84,7 @@ The user dashboard allows students to manage bookings efficiently.
 
 ---
 
-# 🔔 Notification System
+#  Notification System
 
 The notification module provides real-time communication between admins and users.
 
@@ -96,16 +96,16 @@ The notification module provides real-time communication between admins and user
 
 ---
 
-# 📅 Booking System
+#  Booking System
 
-## 👨‍🎓 Student Features
+##  Student Features
 Students can:
 -  Select Available Labs
 -  Choose Booking Date & Time
 -  View Approval Status
 -  Track Upcoming Sessions
 
-## 👨‍💼 Admin Features
+##  Admin Features
 Administrators can:
 -  Approve Bookings
 -  Reject Bookings
@@ -113,7 +113,7 @@ Administrators can:
 
 ---
 
-# 📈 Analytics
+#  Analytics
 
 The system integrates Chart.js for advanced data visualization.
 
@@ -124,7 +124,7 @@ The system integrates Chart.js for advanced data visualization.
 
 ---
 
-# 🔐 Security Features
+#  Security Features
 
 The project includes multiple security mechanisms to ensure system safety.
 
@@ -138,7 +138,7 @@ The project includes multiple security mechanisms to ensure system safety.
 
 ---
 
-# 🌟 Support the Project
+#  Support the Project
 
 If you like this project, please give it a ⭐ on GitHub.
 
@@ -149,11 +149,7 @@ It helps:
 ---
 
 
-# 👨‍💻 Developed By
 
-**K. Himash Madushanka**  
-🎓 Data Science Undergraduate
-add star give
 
 
 
