@@ -8,8 +8,8 @@ It helps students reserve computer labs easily while enabling administrators to 
 #  Features
 
 ##  Student Features
-- User Registration & Login
-- Book Computer Labs
+- User Registration & Login 
+- Book Computer Labs 
 - View Upcoming Sessions
 - Booking Status Tracking
 - Interactive Dashboard
@@ -135,21 +135,14 @@ The project includes multiple security mechanisms to ensure system safety.
 -  Secure Form Handling
 -  Input Validation
 
-
 ---
 
 #  Support the Project
 
-If you like this project, please give it a ⭐ on GitHub.
+If you like this project, please give it a on GitHub.
 
 It helps:
 -  Support open-source learning
 -  Share with other developers
 
 ---
-
-
-
-
-
-
